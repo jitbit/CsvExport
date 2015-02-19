@@ -3,7 +3,14 @@ A very simple CSV-export tool for C#, code ispired by a thread at Stackoverflow,
 
 This was previously published as a "Gist" but I moved it here, for easier forking/contributing.
 
-Usage example:
+## Features
+
+1. Excel-compatible export (separator detected automatically, friendly-trimming rows and values for compatibility)
+2. Escapes commas, quotes, multiline text
+3. Exports dates in timezone-proof format
+4. Extremely easy to use
+
+### Usage example:
 
 	var myExport = new CsvExport();
 
@@ -16,3 +23,6 @@ Usage example:
 	myExport["Region"] = "Canberra \"in\" Australia";
 	myExport["Sales"] = 50000;
 	myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+
+	///ASP.NET MVC action example
+	return File(myExport.ExportToBytes(), "text/csv", "results.csv");
