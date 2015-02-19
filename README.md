@@ -11,7 +11,7 @@ This was previously published as a "Gist" but I moved it here, for easier forkin
 4. Extremely easy to use
 
 ### Usage example:
-
+```c#
 	var myExport = new CsvExport();
 
 	myExport.AddRow();
@@ -26,3 +26,4 @@ This was previously published as a "Gist" but I moved it here, for easier forkin
 
 	///ASP.NET MVC action example
 	return File(myExport.ExportToBytes(), "text/csv", "results.csv");
+```
