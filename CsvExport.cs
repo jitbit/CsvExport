@@ -100,15 +100,13 @@ namespace Jitbit.Utils
 			sb.AppendLine("sep=,");
 
 			// The header
-			foreach (string field in fields)
-				sb.Append(field).Append(",");
+			sb.Append(string.Join(",", fields.ToArray()));
 			sb.AppendLine();
 
 			// The rows
 			foreach (Dictionary<string, object> row in rows)
 			{
-				foreach (string field in fields)
-					sb.Append(MakeValueCsvFriendly(row[field])).Append(",");
+				sb.Append(string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])).ToArray()));
 				sb.AppendLine();
 			}
 
