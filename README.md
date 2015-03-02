@@ -11,6 +11,9 @@ This was previously published as a "Gist" but I moved it here, for easier forkin
 4. Extremely easy to use
 
 ### Usage example:
+
+Simply include one C# file into your project. Then:
+
 ```c#
 	var myExport = new CsvExport();
 
