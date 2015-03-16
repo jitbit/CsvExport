@@ -30,3 +30,6 @@ Simply include one C# file into your project. Then:
 	///ASP.NET MVC action example
 	return File(myExport.ExportToBytes(), "text/csv", "results.csv");
 ```
+
+
+Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/web-helpdesk/)
