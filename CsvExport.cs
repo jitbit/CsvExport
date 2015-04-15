@@ -106,6 +106,10 @@ namespace Jitbit.Utils
 			// The rows
 			foreach (Dictionary<string, object> row in rows)
 			{
+				fields.Where(f => !row.ContainsKey(f)).ToList().ForEach(k =>
+		                {
+		                    row[k] = null;
+		                });
 				sb.Append(string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])).ToArray()));
 				sb.AppendLine();
 			}
