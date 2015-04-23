@@ -67,6 +67,25 @@ namespace Jitbit.Utils
 		}
 
 		/// <summary>
+		/// Add a list of typed objects, maps object properties to CsvFields
+		/// </summary>
+		public void AddRows<T>(IEnumerable<T> list) where T : object
+		{
+			if (list.Any())
+			{
+				foreach (var obj in list)
+				{
+					AddRow();
+					var values = obj.GetType().GetProperties();
+					foreach (var value in values)
+					{
+						this[value.Name] = value.GetValue(obj, null);
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Converts a value to how it should output in a csv file
 		/// If it has a comma, it needs surrounding with double quotes
 		/// Eg Sydney, Australia -> "Sydney, Australia"
