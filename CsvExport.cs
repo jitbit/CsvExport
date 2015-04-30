@@ -44,6 +44,18 @@ namespace Jitbit.Utils
 		/// The current row
 		/// </summary>
 		Dictionary<string, object> currentRow { get { return rows[rows.Count - 1]; } }
+		
+		private readonly char enclosingCharacter;
+		
+		public CsvExport(char enclosingCharacter)
+		{
+			this.enclosingCharacter = enclosingCharacter;
+		}
+		
+		public CsvExport() : this('"')
+		{
+			
+		}
 
 		/// <summary>
 		/// Set a value on this column
@@ -104,7 +116,7 @@ namespace Jitbit.Utils
 			}
 			string output = value.ToString();
 			if (output.Contains(",") || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
-				output = '"' + output.Replace("\"", "\"\"") + '"';
+				output = this.enclosingCharacter + output.Replace("\"", "\"\"") + this.enclosingCharacter;
 
 			return output.Length <= 32767 ? output : output.Substring(0, 32767);
 		}
