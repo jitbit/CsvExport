@@ -69,7 +69,7 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Add a list of typed objects, maps object properties to CsvFields
 		/// </summary>
-		public void AddRows<T>(IEnumerable<T> list) where T : object
+		public void AddRows<T>(IEnumerable<T> list)
 		{
 			if (list.Any())
 			{
