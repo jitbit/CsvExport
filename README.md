@@ -31,5 +31,9 @@ Simply include one C# file into your project. Then:
 	return File(myExport.ExportToBytes(), "text/csv", "results.csv");
 ```
 
+### License
+
+The code is licensed under *MIT License*.
+
 
 Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/web-helpdesk/)
