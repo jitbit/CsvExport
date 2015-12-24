@@ -36,4 +36,4 @@ Simply include one C# file into your project. Then:
 The code is licensed under *MIT License*.
 
 
-Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/web-helpdesk/)
+Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/helpdesk/)
