@@ -158,7 +158,7 @@ namespace Jitbit.Utils
 		/// </summary>
 		public void ExportToFile(string path)
 		{
-			File.WriteAllText(path, Export());
+			File.WriteAllLines(path, ExportToLines());
 		}
 
 		/// <summary>
