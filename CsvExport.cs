@@ -118,27 +118,36 @@ namespace Jitbit.Utils
 		}
 
 		/// <summary>
+		/// Outputs all rows as a CSV, returning one string at a time
+		/// </summary>
+		private IEnumerable<string> ExportToLines()
+		{
+			yield return "sep=,";
+
+			// The header
+			yield return string.Join(",", fields);
+
+			// The rows
+			foreach (Dictionary<string, object> row in rows)
+			{
+				foreach (string k in fields.Where(f => !row.ContainsKey(f)))
+				{
+					row[k] = null;
+				}
+				yield return string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])));
+			}
+		}
+
+		/// <summary>
 		/// Output all rows as a CSV returning a string
 		/// </summary>
 		public string Export()
 		{
 			StringBuilder sb = new StringBuilder();
 
-			sb.AppendLine("sep=,");
-
-			// The header
-			sb.Append(string.Join(",", fields.ToArray()));
-			sb.AppendLine();
-
-			// The rows
-			foreach (Dictionary<string, object> row in rows)
+			foreach (string line in ExportToLines())
 			{
-				fields.Where(f => !row.ContainsKey(f)).ToList().ForEach(k =>
-		                {
-		                    row[k] = null;
-		                });
-				sb.Append(string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])).ToArray()));
-				sb.AppendLine();
+				sb.AppendLine(line);
 			}
 
 			return sb.ToString();
@@ -149,7 +158,7 @@ namespace Jitbit.Utils
 		/// </summary>
 		public void ExportToFile(string path)
 		{
-			File.WriteAllText(path, Export());
+			File.WriteAllLines(path, ExportToLines(), Encoding.UTF8);
 		}
 
 		/// <summary>
