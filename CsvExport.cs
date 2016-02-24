@@ -118,17 +118,14 @@ namespace Jitbit.Utils
 		}
 
 		/// <summary>
-		/// Output all rows as a CSV returning a string
+		/// Outputs all rows as a CSV, returning one string at a time
 		/// </summary>
-		public string Export()
+		private IEnumerable<string> ExportToLines()
 		{
-			StringBuilder sb = new StringBuilder();
-
-			sb.AppendLine("sep=,");
+			yield return "sep=,";
 
 			// The header
-			sb.Append(string.Join(",", fields.ToArray()));
-			sb.AppendLine();
+			yield return string.Join(",", fields.ToArray());
 
 			// The rows
 			foreach (Dictionary<string, object> row in rows)
@@ -137,8 +134,20 @@ namespace Jitbit.Utils
 				{
 					row[k] = null;
 				});
-				sb.Append(string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])).ToArray()));
-				sb.AppendLine();
+				yield return string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])).ToArray());
+			}
+		}
+
+		/// <summary>
+		/// Output all rows as a CSV returning a string
+		/// </summary>
+		public string Export()
+		{
+			StringBuilder sb = new StringBuilder();
+
+			foreach (string line in ExportToLines())
+			{
+				sb.AppendLine(line);
 			}
 
 			return sb.ToString();
