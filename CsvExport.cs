@@ -125,16 +125,16 @@ namespace Jitbit.Utils
 			yield return "sep=,";
 
 			// The header
-			yield return string.Join(",", fields.ToArray());
+			yield return string.Join(",", fields);
 
 			// The rows
 			foreach (Dictionary<string, object> row in rows)
 			{
-				fields.Where(f => !row.ContainsKey(f)).ToList().ForEach(k =>
+				foreach (string k in fields.Where(f => !row.ContainsKey(f)))
 				{
 					row[k] = null;
-				});
-				yield return string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])).ToArray());
+				}
+				yield return string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])));
 			}
 		}
 
