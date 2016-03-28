@@ -92,7 +92,7 @@ namespace Jitbit.Utils
 		/// Also if it contains any double quotes ("), then they need to be replaced with quad quotes[sic] ("")
 		/// Eg "Dangerous Dan" McGrew -> """Dangerous Dan"" McGrew"
 		/// </summary>
-		string MakeValueCsvFriendly(object value)
+		public static string MakeValueCsvFriendly(object value)
 		{
 			if (value == null) return "";
 			if (value is INullable && ((INullable)value).IsNull) return "";
@@ -102,19 +102,23 @@ namespace Jitbit.Utils
 					return ((DateTime)value).ToString("yyyy-MM-dd");
 				return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
 			}
-			string output = value.ToString();
+			string output = value.ToString().Trim();
 			if (output.Contains(",") || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
 				output = '"' + output.Replace("\"", "\"\"") + '"';
-				
+
 			if (output.Length > 30000) //cropping value for stupid Excel
 			{
 				if (output.EndsWith("\""))
-					output = output.Substring(0, 30000) + "\"";
+				{
+					output = output.Substring(0, 30000);
+					if(output.EndsWith("\"") && !output.EndsWith("\"\"")) //rare situation when cropped line ends with a '"'
+						output += "\""; //add another '"' to escape it
+					output += "\"";
+				}
 				else
 					output = output.Substring(0, 30000);
 			}
-
-			return output.Length <= 32767 ? output : output.Substring(0, 32767);
+			return output;
 		}
 
 		/// <summary>
