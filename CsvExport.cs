@@ -46,9 +46,21 @@ namespace Jitbit.Utils
 		Dictionary<string, object> currentRow { get { return rows[rows.Count - 1]; } }
 
 		/// <summary>
-		/// The string used to separate columns in the exported CSV
+		/// The string used to separate columns in the output
 		/// </summary>
-		private const string columnSeparator = ",";
+		private readonly string columnSeparator;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
+		/// </summary>
+		/// <param name="columnSeparator">
+		/// The string used to separate columns in the output.
+		/// By default this is a comma so that the generated output is a CSV file.
+		/// </param>
+		public CsvExport(string columnSeparator=",")
+		{
+			this.columnSeparator = columnSeparator;
+		}
 
 		/// <summary>
 		/// Set a value on this column
@@ -97,7 +109,11 @@ namespace Jitbit.Utils
 		/// Also if it contains any double quotes ("), then they need to be replaced with quad quotes[sic] ("")
 		/// Eg "Dangerous Dan" McGrew -> """Dangerous Dan"" McGrew"
 		/// </summary>
-		public static string MakeValueCsvFriendly(object value)
+		/// <param name="columnSeparator">
+		/// The string used to separate columns in the output.
+		/// By default this is a comma so that the generated output is a CSV document.
+		/// </param>
+		public static string MakeValueCsvFriendly(object value, string columnSeparator=",")
 		{
 			if (value == null) return "";
 			if (value is INullable && ((INullable)value).IsNull) return "";
@@ -143,7 +159,7 @@ namespace Jitbit.Utils
 				{
 					row[k] = null;
 				}
-				yield return string.Join(columnSeparator, fields.Select(field => MakeValueCsvFriendly(row[field])));
+				yield return string.Join(columnSeparator, fields.Select(field => MakeValueCsvFriendly(row[field], columnSeparator)));
 			}
 		}
 
