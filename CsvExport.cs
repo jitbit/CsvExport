@@ -46,6 +46,34 @@ namespace Jitbit.Utils
 		Dictionary<string, object> currentRow { get { return rows[rows.Count - 1]; } }
 
 		/// <summary>
+		/// The string used to separate columns in the output
+		/// </summary>
+		private readonly string columnSeparator;
+
+		/// <summary>
+		/// Whether to include the preamble that declares which column separator is used in the output
+		/// </summary>
+		private readonly bool includeColumnSeparatorDefinitionPreamble;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
+		/// </summary>
+		/// <param name="columnSeparator">
+		/// The string used to separate columns in the output.
+		/// By default this is a comma so that the generated output is a CSV file.
+		/// </param>
+		/// <param name="includeColumnSeparatorDefinitionPreamble">
+		/// Whether to include the preamble that declares which column separator is used in the output.
+		/// By default this is <c>true</c> so that Excel can open the generated CSV
+		/// without asking the user to specify the delimiter used in the file.
+		/// </param>
+		public CsvExport(string columnSeparator=",", bool includeColumnSeparatorDefinitionPreamble=true)
+		{
+			this.columnSeparator = columnSeparator;
+			this.includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
+		}
+
+		/// <summary>
 		/// Set a value on this column
 		/// </summary>
 		public object this[string field]
@@ -92,7 +120,11 @@ namespace Jitbit.Utils
 		/// Also if it contains any double quotes ("), then they need to be replaced with quad quotes[sic] ("")
 		/// Eg "Dangerous Dan" McGrew -> """Dangerous Dan"" McGrew"
 		/// </summary>
-		public static string MakeValueCsvFriendly(object value)
+		/// <param name="columnSeparator">
+		/// The string used to separate columns in the output.
+		/// By default this is a comma so that the generated output is a CSV document.
+		/// </param>
+		public static string MakeValueCsvFriendly(object value, string columnSeparator=",")
 		{
 			if (value == null) return "";
 			if (value is INullable && ((INullable)value).IsNull) return "";
@@ -103,7 +135,7 @@ namespace Jitbit.Utils
 				return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
 			}
 			string output = value.ToString().Trim();
-			if (output.Contains(",") || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
+			if (output.Contains(columnSeparator) || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
 				output = '"' + output.Replace("\"", "\"\"") + '"';
 
 			if (output.Length > 30000) //cropping value for stupid Excel
@@ -126,10 +158,10 @@ namespace Jitbit.Utils
 		/// </summary>
 		private IEnumerable<string> ExportToLines()
 		{
-			yield return "sep=,";
+			if (includeColumnSeparatorDefinitionPreamble) yield return "sep=" + columnSeparator;
 
 			// The header
-			yield return string.Join(",", fields);
+			yield return string.Join(columnSeparator, fields);
 
 			// The rows
 			foreach (Dictionary<string, object> row in rows)
@@ -138,7 +170,7 @@ namespace Jitbit.Utils
 				{
 					row[k] = null;
 				}
-				yield return string.Join(",", fields.Select(field => MakeValueCsvFriendly(row[field])));
+				yield return string.Join(columnSeparator, fields.Select(field => MakeValueCsvFriendly(row[field], columnSeparator)));
 			}
 		}
 
