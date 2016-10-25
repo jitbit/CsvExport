@@ -51,15 +51,26 @@ namespace Jitbit.Utils
 		private readonly string columnSeparator;
 
 		/// <summary>
+		/// Whether to include the preamble that declares which column separator is used in the output
+		/// </summary>
+		private readonly bool includeColumnSeparatorDefinitionPreamble;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
 		/// </summary>
 		/// <param name="columnSeparator">
 		/// The string used to separate columns in the output.
 		/// By default this is a comma so that the generated output is a CSV file.
 		/// </param>
-		public CsvExport(string columnSeparator=",")
+		/// <param name="includeColumnSeparatorDefinitionPreamble">
+		/// Whether to include the preamble that declares which column separator is used in the output.
+		/// By default this is <c>true</c> so that Excel can open the generated CSV
+		/// without asking the user to specify the delimiter used in the file.
+		/// </param>
+		public CsvExport(string columnSeparator=",", bool includeColumnSeparatorDefinitionPreamble=true)
 		{
 			this.columnSeparator = columnSeparator;
+			this.includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 		}
 
 		/// <summary>
@@ -147,7 +158,7 @@ namespace Jitbit.Utils
 		/// </summary>
 		private IEnumerable<string> ExportToLines()
 		{
-			yield return "sep=" + columnSeparator;
+			if (includeColumnSeparatorDefinitionPreamble) yield return "sep=" + columnSeparator;
 
 			// The header
 			yield return string.Join(columnSeparator, fields);
