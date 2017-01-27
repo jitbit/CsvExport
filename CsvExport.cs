@@ -4,6 +4,7 @@ using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web;
 
 namespace Jitbit.Utils
 {
@@ -47,12 +48,12 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// The string used to separate columns in the output
 		/// </summary>
-		private readonly string _columnSeparator;
+		private readonly string columnSeparator;
 
 		/// <summary>
 		/// Whether to include the preamble that declares which column separator is used in the output
 		/// </summary>
-		private readonly bool _includeColumnSeparatorDefinitionPreamble;
+		private readonly bool includeColumnSeparatorDefinitionPreamble;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
@@ -68,8 +69,8 @@ namespace Jitbit.Utils
 		/// </param>
 		public CsvExport(string columnSeparator=",", bool includeColumnSeparatorDefinitionPreamble=true)
 		{
-			this._columnSeparator = columnSeparator;
-			this._includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
+			this.columnSeparator = columnSeparator;
+			this.includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 		}
 
 		/// <summary>
@@ -96,10 +97,9 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Add a list of typed objects, maps object properties to CsvFields
 		/// </summary>
-		public void AddRows<T>(IEnumerable<T> enumerable)
+		public void AddRows<T>(IEnumerable<T> list)
 		{
-		    var list = enumerable as IList<T> ?? enumerable.ToList();
-		    if (list.Any())
+			if (list.Any())
 			{
 				foreach (var obj in list)
 				{
@@ -158,10 +158,10 @@ namespace Jitbit.Utils
 		/// </summary>
 		private IEnumerable<string> ExportToLines()
 		{
-			if (_includeColumnSeparatorDefinitionPreamble) yield return "sep=" + _columnSeparator;
+			if (includeColumnSeparatorDefinitionPreamble) yield return "sep=" + columnSeparator;
 
 			// The header
-			yield return string.Join(_columnSeparator, fields);
+			yield return string.Join(columnSeparator, fields);
 
 			// The rows
 			foreach (Dictionary<string, object> row in rows)
@@ -170,7 +170,7 @@ namespace Jitbit.Utils
 				{
 					row[k] = null;
 				}
-				yield return string.Join(_columnSeparator, fields.Select(field => MakeValueCsvFriendly(row[field], _columnSeparator)));
+				yield return string.Join(columnSeparator, fields.Select(field => MakeValueCsvFriendly(row[field], columnSeparator)));
 			}
 		}
 
