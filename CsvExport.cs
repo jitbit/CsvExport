@@ -4,7 +4,6 @@ using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web;
 
 namespace Jitbit.Utils
 {
@@ -33,27 +32,27 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// To keep the ordered list of column names
 		/// </summary>
-		List<string> fields = new List<string>();
+		List<string> _fields = new List<string>();
 
 		/// <summary>
 		/// The list of rows
 		/// </summary>
-		List<Dictionary<string, object>> rows = new List<Dictionary<string, object>>();
+		List<Dictionary<string, object>> _rows = new List<Dictionary<string, object>>();
 
 		/// <summary>
 		/// The current row
 		/// </summary>
-		Dictionary<string, object> currentRow { get { return rows[rows.Count - 1]; } }
+		Dictionary<string, object> _currentRow { get { return _rows[_rows.Count - 1]; } }
 
 		/// <summary>
 		/// The string used to separate columns in the output
 		/// </summary>
-		private readonly string columnSeparator;
+		private readonly string _columnSeparator;
 
 		/// <summary>
 		/// Whether to include the preamble that declares which column separator is used in the output
 		/// </summary>
-		private readonly bool includeColumnSeparatorDefinitionPreamble;
+		private readonly bool _includeColumnSeparatorDefinitionPreamble;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
@@ -69,8 +68,8 @@ namespace Jitbit.Utils
 		/// </param>
 		public CsvExport(string columnSeparator=",", bool includeColumnSeparatorDefinitionPreamble=true)
 		{
-			this.columnSeparator = columnSeparator;
-			this.includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
+			_columnSeparator = columnSeparator;
+			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 		}
 
 		/// <summary>
@@ -81,8 +80,8 @@ namespace Jitbit.Utils
 			set
 			{
 				// Keep track of the field names, because the dictionary loses the ordering
-				if (!fields.Contains(field)) fields.Add(field);
-				currentRow[field] = value;
+				if (!_fields.Contains(field)) _fields.Add(field);
+				_currentRow[field] = value;
 			}
 		}
 
@@ -91,7 +90,7 @@ namespace Jitbit.Utils
 		/// </summary>
 		public void AddRow()
 		{
-			rows.Add(new Dictionary<string, object>());
+			_rows.Add(new Dictionary<string, object>());
 		}
 
 		/// <summary>
@@ -158,19 +157,19 @@ namespace Jitbit.Utils
 		/// </summary>
 		private IEnumerable<string> ExportToLines()
 		{
-			if (includeColumnSeparatorDefinitionPreamble) yield return "sep=" + columnSeparator;
+			if (_includeColumnSeparatorDefinitionPreamble) yield return "sep=" + _columnSeparator;
 
 			// The header
-			yield return string.Join(columnSeparator, fields);
+			yield return string.Join(_columnSeparator, _fields);
 
 			// The rows
-			foreach (Dictionary<string, object> row in rows)
+			foreach (Dictionary<string, object> row in _rows)
 			{
-				foreach (string k in fields.Where(f => !row.ContainsKey(f)))
+				foreach (string k in _fields.Where(f => !row.ContainsKey(f)))
 				{
 					row[k] = null;
 				}
-				yield return string.Join(columnSeparator, fields.Select(field => MakeValueCsvFriendly(row[field], columnSeparator)));
+				yield return string.Join(_columnSeparator, _fields.Select(field => MakeValueCsvFriendly(row[field], _columnSeparator)));
 			}
 		}
 
