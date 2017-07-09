@@ -31,6 +31,14 @@ Simply include one C# file into your project. Then:
 	return File(myExport.ExportToBytes(), "text/csv", "results.csv");
 ```
 
+### Nuget
+
+I've published this to Nuget.
+
+`Install-Package CsvExport`
+
+This will simply add the cs-file to the root of your project.
+
 ### License
 
 The code is licensed under *MIT License*.
