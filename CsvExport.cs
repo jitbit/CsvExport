@@ -160,7 +160,7 @@ namespace Jitbit.Utils
 			if (_includeColumnSeparatorDefinitionPreamble) yield return "sep=" + _columnSeparator;
 
 			// The header
-			yield return string.Join(_columnSeparator, _fields);
+			yield return string.Join(_columnSeparator, _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator)));
 
 			// The rows
 			foreach (Dictionary<string, object> row in _rows)
