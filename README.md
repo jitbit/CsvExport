@@ -31,7 +31,7 @@ Simply include one C# file into your project. Then:
 	return File(myExport.ExportToBytes(), "text/csv", "results.csv");
 ```
 
-### Nuget
+# (NEW!) Nuget
 
 I've published this to Nuget.
 
