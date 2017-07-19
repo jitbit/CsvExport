@@ -1,3 +1,30 @@
+/*
+ CsvExport
+ Very simple CSV-export tool for C#
+ Repo: https://github.com/jitbit/CsvExport
+ 
+ Usage:
+ 	var myExport = new CsvExport();
+
+	myExport.AddRow();
+	myExport["Region"] = "Los Angeles, USA";
+	myExport["Sales"] = 100000;
+	myExport["Date Opened"] = new DateTime(2003, 12, 31);
+		
+	myExport.AddRow();
+	myExport["Region"] = "Canberra \"in\" Australia";
+	myExport["Sales"] = 50000;
+	myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+	
+	myExport.ExportToFile("Somefile.csv")
+	
+	
+You can also export/compute file using any of following method:
+	string myCsv = myExport.Export();
+	byte[] myCsvData = myExport.ExportToBytes();
+	File(myExport.ExportToBytes(), "text/csv", "results.csv");
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
@@ -7,26 +34,6 @@ using System.Text;
 
 namespace Jitbit.Utils
 {
-	/// <summary>
-	/// Simple CSV export
-	/// Example:
-	///   CsvExport myExport = new CsvExport();
-	///
-	///   myExport.AddRow();
-	///   myExport["Region"] = "New York, USA";
-	///   myExport["Sales"] = 100000;
-	///   myExport["Date Opened"] = new DateTime(2003, 12, 31);
-	///
-	///   myExport.AddRow();
-	///   myExport["Region"] = "Sydney \"in\" Australia";
-	///   myExport["Sales"] = 50000;
-	///   myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
-	///
-	/// Then you can do any of the following three output options:
-	///   string myCsv = myExport.Export();
-	///   myExport.ExportToFile("Somefile.csv");
-	///   byte[] myCsvData = myExport.ExportToBytes();
-	/// </summary>
 	public class CsvExport
 	{
 		/// <summary>
