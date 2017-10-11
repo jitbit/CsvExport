@@ -134,21 +134,13 @@ namespace Jitbit.Utils
 				return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
 			}
 			string output = value.ToString().Trim();
+			
+			if (output.Length > 30000) //cropping value for stupid Excel
+				output = output.Substring(0, 30000);
+
 			if (output.Contains(columnSeparator) || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
 				output = '"' + output.Replace("\"", "\"\"") + '"';
-
-			if (output.Length > 30000) //cropping value for stupid Excel
-			{
-				if (output.EndsWith("\""))
-				{
-					output = output.Substring(0, 30000);
-					if(output.EndsWith("\"") && !output.EndsWith("\"\"")) //rare situation when cropped line ends with a '"'
-						output += "\""; //add another '"' to escape it
-					output += "\"";
-				}
-				else
-					output = output.Substring(0, 30000);
-			}
+			
 			return output;
 		}
 
