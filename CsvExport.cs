@@ -147,12 +147,13 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Outputs all rows as a CSV, returning one string at a time
 		/// </summary>
-		private IEnumerable<string> ExportToLines()
+		private IEnumerable<string> ExportToLines(Boolean includeHeader = false)
 		{
 			if (_includeColumnSeparatorDefinitionPreamble) yield return "sep=" + _columnSeparator;
 
 			// The header
-			yield return string.Join(_columnSeparator, _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator)));
+			if (includeHeader)
+				yield return string.Join(_columnSeparator, _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator)));
 
 			// The rows
 			foreach (Dictionary<string, object> row in _rows)
@@ -168,11 +169,11 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Output all rows as a CSV returning a string
 		/// </summary>
-		public string Export()
+		public string Export(Boolean includeHeader = false)
 		{
 			StringBuilder sb = new StringBuilder();
 
-			foreach (string line in ExportToLines())
+			foreach (string line in ExportToLines(includeHeader))
 			{
 				sb.AppendLine(line);
 			}
@@ -183,17 +184,17 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Exports to a file
 		/// </summary>
-		public void ExportToFile(string path)
+		public void ExportToFile(string path, Boolean includeHeader = false)
 		{
-			File.WriteAllLines(path, ExportToLines(), Encoding.UTF8);
+			File.WriteAllLines(path, ExportToLines(includeHeader), Encoding.UTF8);
 		}
 
 		/// <summary>
 		/// Exports as raw UTF8 bytes
 		/// </summary>
-		public byte[] ExportToBytes()
+		public byte[] ExportToBytes(Boolean includeHeader = false)
 		{
-			var data = Encoding.UTF8.GetBytes(Export());
+			var data = Encoding.UTF8.GetBytes(Export(includeHeader));
 			return Encoding.UTF8.GetPreamble().Concat(data).ToArray();
 		}
 	}
