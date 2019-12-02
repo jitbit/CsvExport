@@ -44,4 +44,4 @@ This will simply add the cs-file to the root of your project.
 The code is licensed under *MIT License*.
 
 
-Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/helpdesk/)
+Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://jitbit.github.com/helpdesk/)
