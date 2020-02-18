@@ -62,6 +62,11 @@ namespace Jitbit.Utils
 		private readonly bool _includeColumnSeparatorDefinitionPreamble;
 
 		/// <summary>
+		/// Whether to include the header row with column names
+		/// </summary>
+		private readonly bool _includeHeaderRow;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
 		/// </summary>
 		/// <param name="columnSeparator">
@@ -73,10 +78,14 @@ namespace Jitbit.Utils
 		/// By default this is <c>true</c> so that Excel can open the generated CSV
 		/// without asking the user to specify the delimiter used in the file.
 		/// </param>
-		public CsvExport(string columnSeparator=",", bool includeColumnSeparatorDefinitionPreamble=true)
+		/// <param name="includeHeaderRow">
+		/// Whether to include the header row with the columns names in the export
+		/// </param>
+		public CsvExport(string columnSeparator = ",", bool includeColumnSeparatorDefinitionPreamble = true, bool includeHeaderRow = true)
 		{
 			_columnSeparator = columnSeparator;
 			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
+			_includeHeaderRow = includeHeaderRow;
 		}
 
 		/// <summary>
@@ -154,12 +163,12 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Outputs all rows as a CSV, returning one string at a time
 		/// </summary>
-		private IEnumerable<string> ExportToLines(Boolean includeHeader = false)
+		private IEnumerable<string> ExportToLines()
 		{
 			if (_includeColumnSeparatorDefinitionPreamble) yield return "sep=" + _columnSeparator;
 
 			// The header
-			if (includeHeader)
+			if (_includeHeaderRow)
 				yield return string.Join(_columnSeparator, _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator)));
 
 			// The rows
@@ -176,11 +185,11 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Output all rows as a CSV returning a string
 		/// </summary>
-		public string Export(Boolean includeHeader = false)
+		public string Export()
 		{
 			StringBuilder sb = new StringBuilder();
 
-			foreach (string line in ExportToLines(includeHeader))
+			foreach (string line in ExportToLines())
 			{
 				sb.AppendLine(line);
 			}
@@ -191,17 +200,17 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Exports to a file
 		/// </summary>
-		public void ExportToFile(string path, Boolean includeHeader = false)
+		public void ExportToFile(string path)
 		{
-			File.WriteAllLines(path, ExportToLines(includeHeader), Encoding.UTF8);
+			File.WriteAllLines(path, ExportToLines(), Encoding.UTF8);
 		}
 
 		/// <summary>
 		/// Exports as raw UTF8 bytes
 		/// </summary>
-		public byte[] ExportToBytes(Boolean includeHeader = false)
+		public byte[] ExportToBytes()
 		{
-			var data = Encoding.UTF8.GetBytes(Export(includeHeader));
+			var data = Encoding.UTF8.GetBytes(Export());
 			return Encoding.UTF8.GetPreamble().Concat(data).ToArray();
 		}
 	}
