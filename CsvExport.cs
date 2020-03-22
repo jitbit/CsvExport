@@ -143,13 +143,23 @@ namespace Jitbit.Utils
 		{
 			if (value == null) return "";
 			if (value is INullable && ((INullable)value).IsNull) return "";
+
+			string output;
 			if (value is DateTime)
 			{
 				if (((DateTime)value).TimeOfDay.TotalSeconds == 0)
-					return ((DateTime)value).ToString("yyyy-MM-dd");
-				return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
+				{
+					output = ((DateTime)value).ToString("yyyy-MM-dd");
+				}
+				else
+				{
+					output = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
+				}
 			}
-			string output = value.ToString().Trim();
+			else
+			{
+				output = value.ToString().Trim();
+			}
 			
 			if (output.Length > 30000) //cropping value for stupid Excel
 				output = output.Substring(0, 30000);
