@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>CsvExport</id>
+    <version>1.0.2</version>
+    <authors>jitbit</authors>
+    <owners>jitbit</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/jitbit/CsvExport</licenseUrl>
+    <projectUrl>https://github.com/jitbit/CsvExport</projectUrl>
+    <iconUrl>https://github.com/jitbit/CsvExport</iconUrl>
+    <description>CSV Export component for .NET</description>
+    <releaseNotes>Nuget packagerefernce fromat compatibility</releaseNotes>
+    <copyright>Copyright Jitbit 2017-2021</copyright>
+    <tags>CSV csv csvhelper csvexport comma separated value delimited</tags>
+	<contentFiles>
+      <files include="**/CsvExport.cs" flatten="true" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <!-- Add files from an arbitrary folder that's not necessarily in the project -->
+    <file src="CsvExport.cs" target="contentFiles\any\any" />
+    <file src="CsvExport.cs" target="content" />
+  </files>
+</package>
