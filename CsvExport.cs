@@ -160,7 +160,7 @@ namespace Jitbit.Utils
 			{
 				output = value.ToString().Trim();
 			}
-			
+
 			if (output.Length > 30000) //cropping value for stupid Excel
 				output = output.Substring(0, 30000);
 
@@ -212,16 +212,16 @@ namespace Jitbit.Utils
 		/// </summary>
 		public void ExportToFile(string path)
 		{
-			File.WriteAllLines(path, ExportToLines(), Encoding.UTF8);
+			File.WriteAllBytes(path, ExportToBytes());
 		}
 
 		/// <summary>
-		/// Exports as raw UTF8 bytes
+		/// Exports as raw Unicode bytes. We use Unicode to make it Excel compatible.
 		/// </summary>
 		public byte[] ExportToBytes()
 		{
-			var data = Encoding.UTF8.GetBytes(Export());
-			return Encoding.UTF8.GetPreamble().Concat(data).ToArray();
+			var data = Encoding.Unicode.GetBytes(Export());
+			return Encoding.Unicode.GetPreamble().Concat(data).ToArray();
 		}
 	}
 }
