@@ -221,12 +221,36 @@ namespace Jitbit.Utils
 		}
 
 		/// <summary>
-		/// Exports as raw Unicode bytes. We use Unicode to make it Excel compatible.
+		/// Exports as raw bytes.
 		/// </summary>
 		public byte[] ExportToBytes()
 		{
-			var data = Encoding.Unicode.GetBytes(Export());
-			return Encoding.Unicode.GetPreamble().Concat(data).ToArray();
+			using (MemoryStream ms = new MemoryStream())
+			{
+				ms.Write(Encoding.UTF8.GetPreamble());
+
+				using (var sw = new StreamWriter(ms, Encoding.UTF8))
+				{
+					if (_includeColumnSeparatorDefinitionPreamble)
+						sw.WriteLine("sep=" + _columnSeparator);
+
+					foreach (var line in ExportToLines())
+					{
+						int i = 0;
+						foreach (var value in line)
+						{
+							sw.Write(value);
+	
+							if (++i != _fields.Count)
+								sw.Write(_columnSeparator);
+						}
+						sw.Write("\r\n");
+					}
+
+					sw.Flush(); //otherwise we're risking empty stream
+				}
+				return ms.ToArray();
+			}
 		}
 	}
 }
