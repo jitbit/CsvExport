@@ -171,24 +171,20 @@ namespace Jitbit.Utils
 		}
 
 		/// <summary>
-		/// Outputs all rows as a CSV, returning one string at a time
+		/// Outputs all rows as a CSV, returning one "line" at a time
+		/// Where "line" is a IEnumerable of string values
 		/// </summary>
-		private IEnumerable<string> ExportToLines()
+		private IEnumerable<IEnumerable<string>> ExportToLines()
 		{
-			if (_includeColumnSeparatorDefinitionPreamble) yield return "sep=" + _columnSeparator;
-
 			// The header
 			if (_includeHeaderRow)
-				yield return string.Join(_columnSeparator, _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator)));
+				yield return _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator));
 
 			// The rows
 			foreach (Dictionary<string, object> row in _rows)
 			{
-				foreach (string k in _fields.Where(f => !row.ContainsKey(f)))
-				{
-					row[k] = null;
-				}
-				yield return string.Join(_columnSeparator, _fields.Select(field => MakeValueCsvFriendly(row[field], _columnSeparator)));
+				yield return _fields
+					.Select(field => row.TryGetValue(field, out object value) ? MakeValueCsvFriendly(value) : "");
 			}
 		}
 
@@ -199,9 +195,18 @@ namespace Jitbit.Utils
 		{
 			StringBuilder sb = new StringBuilder();
 
-			foreach (string line in ExportToLines())
+			if (_includeColumnSeparatorDefinitionPreamble)
+				sb.AppendLine("sep=" + _columnSeparator);
+
+			foreach (var line in ExportToLines())
 			{
-				sb.AppendLine(line);
+				foreach (var value in line)
+				{
+					sb.Append(value);
+					sb.Append(_columnSeparator);
+				}
+				sb.Length = sb.Length - _columnSeparator.Length; //remove the trailing comma (shut up)
+				sb.Append("\r\n");
 			}
 
 			return sb.ToString();
