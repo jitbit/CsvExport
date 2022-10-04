@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>CsvExport</id>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <authors>jitbit</authors>
     <owners>jitbit</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
