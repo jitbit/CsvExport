@@ -227,7 +227,8 @@ namespace Jitbit.Utils
 		{
 			using (MemoryStream ms = new MemoryStream())
 			{
-				ms.Write(Encoding.UTF8.GetPreamble());
+				var preamble = Encoding.UTF8.GetPreamble();
+				ms.Write(preamble, 0, preamble.Length);
 
 				using (var sw = new StreamWriter(ms, Encoding.UTF8))
 				{
