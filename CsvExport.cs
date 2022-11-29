@@ -236,6 +236,7 @@ namespace Jitbit.Utils
                                 var preamble = encoding.GetPreamble();
                                 ms.Write(preamble, 0, preamble.Length);
 
+
 				using (var sw = new StreamWriter(ms, encoding))
 				{
 					if (_includeColumnSeparatorDefinitionPreamble)
