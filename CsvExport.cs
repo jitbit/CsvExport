@@ -67,6 +67,11 @@ namespace Jitbit.Utils
 		private readonly bool _includeHeaderRow;
 
 		/// <summary>
+        	/// Default encoding for files or byte[] exports
+        	/// </summary>
+        	private const string DefaultEncoding = "UTF-8";
+		
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
 		/// </summary>
 		/// <param name="columnSeparator">
@@ -215,22 +220,23 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Exports to a file
 		/// </summary>
-		public void ExportToFile(string path)
+		public void ExportToFile(string path, string useEncoding = DefaultEncoding)
 		{
-			File.WriteAllBytes(path, ExportToBytes());
+			File.WriteAllBytes(path, ExportToBytes(useEncoding));
 		}
 
 		/// <summary>
 		/// Exports as raw bytes.
 		/// </summary>
-		public byte[] ExportToBytes()
+		public byte[] ExportToBytes(string useEncoding = DefaultEncoding)
 		{
 			using (MemoryStream ms = new MemoryStream())
 			{
-				var preamble = Encoding.UTF8.GetPreamble();
-				ms.Write(preamble, 0, preamble.Length);
+				var encoding = Encoding.GetEncoding(useEncoding);
+                                var preamble = encoding.GetPreamble();
+                                ms.Write(preamble, 0, preamble.Length);
 
-				using (var sw = new StreamWriter(ms, Encoding.UTF8))
+				using (var sw = new StreamWriter(ms, encoding))
 				{
 					if (_includeColumnSeparatorDefinitionPreamble)
 						sw.WriteLine("sep=" + _columnSeparator);
