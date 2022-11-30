@@ -31,7 +31,6 @@ using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Office.Core;
 
 namespace Jitbit.Utils
 {
