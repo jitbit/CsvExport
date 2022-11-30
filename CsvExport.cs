@@ -4,7 +4,7 @@
  Repo: https://github.com/jitbit/CsvExport
  
  Usage:
- 	var myExport = new CsvExport();
+	var myExport = new CsvExport();
 
 	myExport.AddRow();
 	myExport["Region"] = "Los Angeles, USA";
@@ -67,6 +67,11 @@ namespace Jitbit.Utils
 		private readonly bool _includeHeaderRow;
 
 		/// <summary>
+		/// Default encoding
+		/// </summary>
+		private readonly Encoding _defaultEncoding = Encoding.UTF8;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Jitbit.Utils.CsvExport"/> class.
 		/// </summary>
 		/// <param name="columnSeparator">
@@ -93,8 +98,7 @@ namespace Jitbit.Utils
 		/// </summary>
 		public object this[string field]
 		{
-			set
-			{
+			set {
 				// Keep track of the field names, because the dictionary loses the ordering
 				if (!_fields.Contains(field)) _fields.Add(field);
 				_currentRow[field] = value;
@@ -139,7 +143,7 @@ namespace Jitbit.Utils
 		/// The string used to separate columns in the output.
 		/// By default this is a comma so that the generated output is a CSV document.
 		/// </param>
-		public static string MakeValueCsvFriendly(object value, string columnSeparator=",")
+		public static string MakeValueCsvFriendly(object value, string columnSeparator = ",")
 		{
 			if (value == null) return "";
 			if (value is INullable && ((INullable)value).IsNull) return "";
@@ -166,7 +170,7 @@ namespace Jitbit.Utils
 
 			if (output.Contains(columnSeparator) || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
 				output = '"' + output.Replace("\"", "\"\"") + '"';
-			
+
 			return output;
 		}
 
@@ -215,22 +219,24 @@ namespace Jitbit.Utils
 		/// <summary>
 		/// Exports to a file
 		/// </summary>
-		public void ExportToFile(string path)
+		public void ExportToFile(string path, Encoding encoding = null)
 		{
-			File.WriteAllBytes(path, ExportToBytes());
+			File.WriteAllBytes(path, ExportToBytes(encoding ?? _defaultEncoding));
 		}
 
 		/// <summary>
 		/// Exports as raw bytes.
 		/// </summary>
-		public byte[] ExportToBytes()
+		public byte[] ExportToBytes(Encoding encoding = null)
 		{
 			using (MemoryStream ms = new MemoryStream())
 			{
-				var preamble = Encoding.UTF8.GetPreamble();
+				encoding = encoding ?? _defaultEncoding;
+				var preamble = encoding.GetPreamble();
 				ms.Write(preamble, 0, preamble.Length);
 
-				using (var sw = new StreamWriter(ms, Encoding.UTF8))
+
+				using (var sw = new StreamWriter(ms, encoding))
 				{
 					if (_includeColumnSeparatorDefinitionPreamble)
 						sw.WriteLine("sep=" + _columnSeparator);
@@ -241,7 +247,7 @@ namespace Jitbit.Utils
 						foreach (var value in line)
 						{
 							sw.Write(value);
-	
+
 							if (++i != _fields.Count)
 								sw.Write(_columnSeparator);
 						}
