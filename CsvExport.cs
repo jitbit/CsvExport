@@ -120,10 +120,10 @@ namespace Jitbit.Utils
 		{
 			if (list.Any())
 			{
-				foreach (var obj in list)
+				var values = typeof(T).GetProperties();
+				foreach (T obj in list)
 				{
 					AddRow();
-					var values = obj.GetType().GetProperties();
 					foreach (var value in values)
 					{
 						this[value.Name] = value.GetValue(obj, null);
