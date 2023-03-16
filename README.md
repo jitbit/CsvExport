@@ -3,6 +3,8 @@ A very simple CSV-export tool for C#, code ispired by a thread at Stackoverflow,
 
 This was previously published as a "Gist" but I moved it here, for easier forking/contributing.
 
+[![.NET](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml/badge.svg)](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml)
+
 ## Features
 
 1. Excel-compatible export (separator detected automatically, friendly-trimming rows and values for compatibility)
@@ -35,5 +37,4 @@ return File(myExport.ExportToBytes(), "text/csv", "results.csv");
 
 The code is licensed under *MIT License*.
 
-
-Sucessfully tested in production with our [Jitbit Helpdesk Ticketing System](https://jitbit.github.com/helpdesk/)
+Sucessfully tested for years in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/helpdesk/)
