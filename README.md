@@ -11,6 +11,7 @@ This was previously published as a "Gist" but I moved it here, for easier forkin
 2. Escapes commas, quotes, multiline text
 3. Exports dates in timezone-proof format
 4. Extremely easy to use
+5. NET Standard 2.0 library (compatible with both .NET Core and .NET Framework)
 
 ### Usage example:
 
