@@ -13,7 +13,14 @@ This was previously published as a "Gist" but I moved it here, for easier forkin
 4. Extremely easy to use
 5. NET Standard 2.0 library (compatible with both .NET Core and .NET Framework)
 
-### Usage example:
+## Benchmarks
+
+|    Method |        Mean |     Error |   StdDev |    Gen0 |   Gen1 | Allocated |
+|---------- |------------:|----------:|---------:|--------:|-------:|----------:|
+| CsvHelper | 1,311.23 us | 16.935 us | 0.928 us | 15.6250 | 7.8125 | 107.42 KB |
+| CsvExport (this library) |    32.24 us |  1.365 us | 0.075 us |  4.7607 | 0.2441 |  29.37 KB |
+
+## Usage example:
 
 Install via Nuget `Install-Package CsvExport` then:
 
