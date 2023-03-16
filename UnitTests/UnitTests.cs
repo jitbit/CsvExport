@@ -1,4 +1,5 @@
 using Csv;
+using System.Text;
 
 namespace UnitTests
 {
@@ -26,6 +27,12 @@ namespace UnitTests
 Region,Sales,Date Opened
 ""Los Angeles, USA"",100000,2003-12-31
 ""Canberra """"in"""" Australia"",50000,2005-01-01 09:30:00");
+
+			//export to bytes now
+			string csv2 = Encoding.UTF8.GetString(myExport.ExportToBytes())
+				.Trim(new char[] { '\uFEFF' }); //remove the BOM character
+
+			Assert.IsTrue(csv.Trim() == csv2.Trim());
 		}
 
 		[TestMethod]
