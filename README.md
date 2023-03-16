@@ -1,5 +1,5 @@
 # CsvExport
-A very simple and fast CSV-export tool for C#.
+A very simple and very fast CSV-export tool for C#.
 
 [![.NET](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml/badge.svg)](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml)
 
@@ -23,11 +23,11 @@ A very simple and fast CSV-export tool for C#.
 
 This benchmark is generating a 100-line CSV file with 4 columns. Check the "SpeedBenchmarks" code.
 
-## Usage example:
+## Usage examples:
 
 Install via Nuget `Install-Package CsvExport`
 
-For "manual" CSV generation use this:
+For "manual" CSV ad-hoc generation use this:
 
 ```c#
 var myExport = new CsvExport();
