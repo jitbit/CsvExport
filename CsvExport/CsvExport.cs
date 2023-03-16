@@ -37,19 +37,19 @@ namespace Csv
 	public class CsvExport
 	{
 		/// <summary>
-		/// To keep the ordered list of column names
+		/// To keep the list of column names with their indexes, like {"Column Name":"3"}
 		/// </summary>
-		List<string> _fields = new List<string>();
+		Dictionary<string, int> _fields = new();
 
 		/// <summary>
 		/// The list of rows
 		/// </summary>
-		List<Dictionary<string, object>> _rows = new List<Dictionary<string, object>>();
+		List<List<string>> _rows = new();
 
 		/// <summary>
 		/// The current row
 		/// </summary>
-		Dictionary<string, object> _currentRow { get { return _rows[_rows.Count - 1]; } }
+		List<string> _currentRow { get { return _rows[_rows.Count - 1]; } }
 
 		/// <summary>
 		/// The string used to separate columns in the output
@@ -99,9 +99,18 @@ namespace Csv
 		public object this[string field]
 		{
 			set {
-				// Keep track of the field names, because the dictionary loses the ordering
-				if (!_fields.Contains(field)) _fields.Add(field);
-				_currentRow[field] = value;
+				// Keep track of the field names
+				if (!_fields.TryGetValue(field, out int num)) //get the field's index
+				{
+					//not found - add new
+					num = _fields.Count;
+					_fields.Add(field, num);
+				}
+
+				while (num >= _currentRow.Count) //fill the current row with nulls until we have the right size
+					_currentRow.Add(null);
+
+				_currentRow[num] = MakeValueCsvFriendly(value); //set the value at position
 			}
 		}
 
@@ -110,7 +119,7 @@ namespace Csv
 		/// </summary>
 		public void AddRow()
 		{
-			_rows.Add(new Dictionary<string, object>());
+			_rows.Add(new(_fields.Count));
 		}
 
 		/// <summary>
@@ -182,13 +191,12 @@ namespace Csv
 		{
 			// The header
 			if (_includeHeaderRow)
-				yield return _fields.Select(f => MakeValueCsvFriendly(f, _columnSeparator));
+				yield return _fields.OrderBy(f => f.Value).Select(f => MakeValueCsvFriendly(f.Key, _columnSeparator));
 
 			// The rows
-			foreach (Dictionary<string, object> row in _rows)
+			foreach (var row in _rows)
 			{
-				yield return _fields
-					.Select(field => row.TryGetValue(field, out object value) ? MakeValueCsvFriendly(value) : "");
+				yield return row;
 			}
 		}
 

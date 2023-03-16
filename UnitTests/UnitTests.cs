@@ -52,8 +52,34 @@ Region,Sales,Date Opened
 			Assert.IsTrue(csv.Trim() ==
 				@"sep=,
 Region,Sales,Date Opened
-""Los Angeles, USA"",100000,
+""Los Angeles, USA"",100000
 ""Canberra """"in"""" Australia"",,2005-01-01 09:30:00");
+		}
+
+		[TestMethod]
+		public void TestMissingColumns2()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Region"] = "Los Angeles, USA";
+			myExport["Sales"] = 100000;
+
+			myExport.AddRow();
+			myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+
+			myExport.AddRow();
+			myExport["Sales"] = 100000;
+			myExport["Region"] = "Los Angeles, USA";
+			myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+
+			string csv = myExport.Export();
+
+			Assert.IsTrue(csv.Trim() ==
+				@"sep=,
+Region,Sales,Date Opened
+""Los Angeles, USA"",100000
+,,2005-01-01 09:30:00
+""Los Angeles, USA"",100000,2005-01-01 09:30:00");
 		}
 
 		[TestMethod]
