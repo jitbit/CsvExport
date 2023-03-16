@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	<PackageId>CsvExport</PackageId>
+	<Version>2.0.0-beta</Version>
+	<Authors>Alex from Jitbit</Authors>
+    <Copyright>Copyright Jitbit 2017-2023</Copyright>
+    <PackageProjectUrl>https://github.com/jitbit/CsvExport</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/jitbit/CsvExport</RepositoryUrl>
+    <Description>CSV Export component for .NET</Description>
+    <PackageTags>CSV;csv;csvhelper;csvexport;comma separated;value delimited</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
