@@ -208,7 +208,7 @@ namespace Csv
 			StringBuilder sb = new StringBuilder();
 
 			if (_includeColumnSeparatorDefinitionPreamble)
-				sb.AppendLine("sep=" + _columnSeparator);
+				sb.Append("sep=" + _columnSeparator + "\r\n");
 
 			foreach (var line in ExportToLines())
 			{
@@ -247,7 +247,7 @@ namespace Csv
 				using (var sw = new StreamWriter(ms, encoding))
 				{
 					if (_includeColumnSeparatorDefinitionPreamble)
-						sw.WriteLine("sep=" + _columnSeparator);
+						sw.Write("sep=" + _columnSeparator + "\r\n");
 
 					foreach (var line in ExportToLines())
 					{
