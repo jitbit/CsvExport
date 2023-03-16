@@ -12,7 +12,7 @@ This was previously published as a "Gist" but I moved it here, for easier forkin
 
 ### Usage example:
 
-Simply include one C# file into your project. Then:
+Install via Nuget `Install-Package CsvExport` then:
 
 ```c#
 var myExport = new CsvExport();
@@ -30,14 +30,6 @@ myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
 ///ASP.NET MVC action example
 return File(myExport.ExportToBytes(), "text/csv", "results.csv");
 ```
-
-# (NEW!) Nuget
-
-I've published this to Nuget.
-
-`Install-Package CsvExport`
-
-This will simply add the cs-file to the root of your project.
 
 ### License
 
