@@ -23,10 +23,7 @@ namespace UnitTests
 			string csv = myExport.Export();
 
 			Assert.IsTrue(csv.Trim() ==
-				@"sep=,
-Region,Sales,Date Opened
-""Los Angeles, USA"",100000,2003-12-31
-""Canberra """"in"""" Australia"",50000,2005-01-01 09:30:00", csv);
+				"sep=,\r\nRegion,Sales,Date Opened\r\n\"Los Angeles, USA\",100000,2003-12-31\r\n\"Canberra \"\"in\"\" Australia\",50000,2005-01-01 09:30:00", csv);
 
 			//export to bytes now
 			string csv2 = Encoding.UTF8.GetString(myExport.ExportToBytes())
@@ -50,10 +47,7 @@ Region,Sales,Date Opened
 			string csv = myExport.Export();
 
 			Assert.IsTrue(csv.Trim() ==
-				@"sep=,
-Region,Sales,Date Opened
-""Los Angeles, USA"",100000
-""Canberra """"in"""" Australia"",,2005-01-01 09:30:00", csv);
+				"sep=,\r\nRegion,Sales,Date Opened\r\n\"Los Angeles, USA\",100000\r\n\"Canberra \"\"in\"\" Australia\",,2005-01-01 09:30:00", csv);
 		}
 
 		[TestMethod]
@@ -74,12 +68,7 @@ Region,Sales,Date Opened
 
 			string csv = myExport.Export();
 
-			Assert.IsTrue(csv.Trim() ==
-				@"sep=,
-Region,Sales,Date Opened
-""Los Angeles, USA"",100000
-,,2005-01-01 09:30:00
-""Los Angeles, USA"",100000,2005-01-01 09:30:00", csv);
+			Assert.IsTrue(csv.Trim() == "sep=,\r\nRegion,Sales,Date Opened\r\n\"Los Angeles, USA\",100000\r\n,,2005-01-01 09:30:00\r\n\"Los Angeles, USA\",100000,2005-01-01 09:30:00", csv);
 		}
 
 		[TestMethod]
@@ -92,11 +81,7 @@ Region,Sales,Date Opened
 
 			string csv = myExport.Export();
 
-			Assert.IsTrue(csv.Trim() ==
-				@"sep=,
-Id,Name
-123,Ffff
-321,ddd", csv);
+			Assert.IsTrue(csv.Trim() == "sep=,\r\nId,Name\r\n123,Ffff\r\n321,ddd", csv);
 		}
 	}
 
