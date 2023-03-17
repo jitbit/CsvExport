@@ -17,9 +17,9 @@ A very simple and very fast CSV-export tool for C#.
 
 |            Method |        Mean |     Error |   StdDev |    Gen0 |   Gen1 | Allocated |
 |------------------ |------------:|----------:|---------:|--------:|-------:|----------:|
-|         CsvHelper | 1,300.38 us | 32.043 us | 1.756 us | 17.5781 | 7.8125 | 114.25 KB |
-|  CsvExport_Manual |    31.22 us |  5.750 us | 0.315 us |  4.7607 | 0.2441 |  29.37 KB |
-|   CsvExport_Typed |    52.68 us |  1.453 us | 0.080 us |  4.7607 | 0.1221 |  29.46 KB |
+| 😟        CsvHelper | 1,300.38 us | 32.043 us | 1.756 us | 17.5781 | 7.8125 | 114.25 KB |
+| ✅ CsvExport_Manual |    31.22 us |  5.750 us | 0.315 us |  4.7607 | 0.2441 |  29.37 KB |
+| ✅  CsvExport_Typed |    52.68 us |  1.453 us | 0.080 us |  4.7607 | 0.1221 |  29.46 KB |
 
 This benchmark is generating a 100-line CSV file with 4 columns. Check the "SpeedBenchmarks" code.
 
