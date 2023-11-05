@@ -69,8 +69,12 @@ string csv = myExport.Export();
 ```
 Configuring is done via constructor parameters:
 
-```
-var myExport = new CsvExport(columnSeparator: ",", includeColumnSeparatorDefinitionPreamble: true, includeHeaderRow: true);
+```c#
+var myExport = new CsvExport(
+	columnSeparator: ",",
+	includeColumnSeparatorDefinitionPreamble: true, //Excel wants this in CSV files
+	includeHeaderRow: true
+);
 ```
 
 Also, methods `ExportToFile` and `ExportToBytes` offer an optional encoding parameter.
