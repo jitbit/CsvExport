@@ -81,6 +81,29 @@ namespace UnitTests
 
 			Assert.IsTrue(csv.Trim() == "sep=,\r\nId,Name\r\n123,Ffff\r\n321,ddd", csv);
 		}
+
+		[TestMethod]
+		public void WriteToFile()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Region"] = "Los Angeles, USA";
+			myExport["Sales"] = 100000;
+			myExport["Date Opened"] = new DateTime(2003, 12, 31);
+
+			myExport.AddRow();
+			myExport["Region"] = "Canberra \"in\" Australia";
+			myExport["Sales"] = 50000;
+			myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+
+			var filePath = Path.GetTempFileName();
+			myExport.ExportToFile(filePath);
+
+			Assert.IsTrue(File.Exists(filePath));
+			Assert.IsTrue(File.ReadAllText(filePath).Trim() == "sep=,\r\nRegion,Sales,Date Opened\r\n\"Los Angeles, USA\",100000,2003-12-31\r\n\"Canberra \"\"in\"\" Australia\",50000,2005-01-01 09:30:00", File.ReadAllText(filePath));
+
+			File.Delete(filePath);
+		}
 	}
 
 	public class MyClass

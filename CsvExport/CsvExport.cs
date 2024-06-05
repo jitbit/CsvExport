@@ -229,7 +229,9 @@ namespace Csv
 		/// </summary>
 		public void ExportToFile(string path, Encoding encoding = null)
 		{
-			File.WriteAllBytes(path, ExportToBytes(encoding ?? _defaultEncoding));
+			using var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
+			using var ms = ExportAsMemoryStream(encoding);
+			ms.WriteTo(fs);
 		}
 
 		/// <summary>
@@ -237,35 +239,42 @@ namespace Csv
 		/// </summary>
 		public byte[] ExportToBytes(Encoding encoding = null)
 		{
-			using (MemoryStream ms = new MemoryStream())
+			using var ms = ExportAsMemoryStream(encoding);
+			return ms.ToArray();
+		}
+
+		public MemoryStream ExportAsMemoryStream(Encoding encoding = null)
+		{
+			MemoryStream ms = new MemoryStream();
+
+			encoding = encoding ?? _defaultEncoding;
+			var preamble = encoding.GetPreamble();
+			ms.Write(preamble, 0, preamble.Length);
+
+			using (var sw = new StreamWriter(ms, encoding, 1024, leaveOpen: true))
 			{
-				encoding = encoding ?? _defaultEncoding;
-				var preamble = encoding.GetPreamble();
-				ms.Write(preamble, 0, preamble.Length);
+				if (_includeColumnSeparatorDefinitionPreamble)
+					sw.Write("sep=" + _columnSeparator + "\r\n");
 
-
-				using (var sw = new StreamWriter(ms, encoding))
+				foreach (var line in ExportToLines())
 				{
-					if (_includeColumnSeparatorDefinitionPreamble)
-						sw.Write("sep=" + _columnSeparator + "\r\n");
-
-					foreach (var line in ExportToLines())
+					int i = 0;
+					foreach (var value in line)
 					{
-						int i = 0;
-						foreach (var value in line)
-						{
-							sw.Write(value);
+						sw.Write(value);
 
-							if (++i != _fields.Count)
-								sw.Write(_columnSeparator);
-						}
-						sw.Write("\r\n");
+						if (++i != _fields.Count)
+							sw.Write(_columnSeparator);
 					}
-
-					sw.Flush(); //otherwise we're risking empty stream
+					sw.Write("\r\n");
 				}
-				return ms.ToArray();
+
+				sw.Flush(); //otherwise we're risking empty stream
 			}
+
+			ms.Position = 0;
+
+			return ms;
 		}
 	}
 }
