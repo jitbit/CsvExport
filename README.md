@@ -43,7 +43,7 @@ myExport["Sales"] = 50000;
 myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
 
 ///ASP.NET MVC action example
-return File(myExport.ExportToBytes(), "text/csv", "results.csv");
+return File(myExport.ExportAsMemoryStream(), "text/csv", "results.csv");
 ```
 
 For generating CSV out of a typed `List<T>` of objects:
@@ -77,7 +77,7 @@ var myExport = new CsvExport(
 );
 ```
 
-Also, methods `ExportToFile` and `ExportToBytes` offer an optional encoding parameter.
+Also, methods `ExportToFile` and `ExportAsMemoryStream` and `ExportToBytes` offer an optional encoding parameter.
 
 ### License
 
