@@ -110,7 +110,7 @@ namespace Csv
 				while (num >= _currentRow.Count) //fill the current row with nulls until we have the right size
 					_currentRow.Add(null);
 
-				_currentRow[num] = MakeValueCsvFriendly(value); //set the value at position
+				_currentRow[num] = MakeValueCsvFriendly(value, _columnSeparator); //set the value at position
 			}
 		}
 
