@@ -158,15 +158,15 @@ namespace Csv
 			if (value is INullable && ((INullable)value).IsNull) return "";
 
 			string output;
-			if (value is DateTime)
+			if (value is DateTime date)
 			{
-				if (((DateTime)value).TimeOfDay.TotalSeconds == 0)
+				if (date.TimeOfDay.TotalSeconds == 0)
 				{
-					output = ((DateTime)value).ToString("yyyy-MM-dd");
+					output = date.ToString("yyyy-MM-dd");
 				}
 				else
 				{
-					output = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
+					output = date.ToString("yyyy-MM-dd HH:mm:ss");
 				}
 			}
 			else
