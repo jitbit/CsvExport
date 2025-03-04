@@ -81,6 +81,6 @@ Also, methods `ExportToFile` and `ExportAsMemoryStream` and `ExportToBytes` offe
 
 ### License
 
-The code is licensed under *MIT License*.
+The code is licensed under *[MIT License](/LICENSE)*.
 
 Sucessfully tested for years in production with our [Jitbit Helpdesk Ticketing System](https://www.jitbit.com/helpdesk/)
