@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 	<PackageId>CsvExport</PackageId>
-	<Version>2.0.1</Version>
+	<Version>2.2.0</Version>
 	<Authors>Alex from Jitbit</Authors>
-    <Copyright>Copyright Jitbit 2017-2023</Copyright>
+    <Copyright>Copyright Jitbit 2017-2025</Copyright>
     <PackageProjectUrl>https://github.com/jitbit/CsvExport</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
