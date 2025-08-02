@@ -49,7 +49,7 @@ namespace Csv
 		/// <summary>
 		/// The current row
 		/// </summary>
-		List<string> _currentRow { get { return _rows[_rows.Count - 1]; } }
+		List<string> _currentRow = null;
 
 		/// <summary>
 		/// The string used to separate columns in the output
@@ -98,7 +98,10 @@ namespace Csv
 		/// </summary>
 		public object this[string field]
 		{
-			set {
+			set
+			{
+				if (_currentRow is null) return; // no row has been added yet
+
 				// Keep track of the field names
 				if (!_fields.TryGetValue(field, out int num)) //get the field's index
 				{
@@ -119,7 +122,8 @@ namespace Csv
 		/// </summary>
 		public void AddRow()
 		{
-			_rows.Add(new(_fields.Count));
+			_currentRow = new(_fields.Count);
+			_rows.Add(_currentRow);
 		}
 
 		/// <summary>
@@ -129,7 +133,7 @@ namespace Csv
 		{
 			if (list.Any())
 			{
-				var values = typeof(T).GetProperties();
+				var values = ReflectionCache<T>.Properties;
 				foreach (T obj in list)
 				{
 					AddRow();
@@ -157,27 +161,24 @@ namespace Csv
 			if (value == null) return "";
 			if (value is INullable && ((INullable)value).IsNull) return "";
 
-			string output;
 			if (value is DateTime date)
 			{
 				if (date.TimeOfDay.TotalSeconds == 0)
 				{
-					output = date.ToString("yyyy-MM-dd");
+					return date.ToString("yyyy-MM-dd");
 				}
 				else
 				{
-					output = date.ToString("yyyy-MM-dd HH:mm:ss");
+					return date.ToString("yyyy-MM-dd HH:mm:ss");
 				}
 			}
-			else
-			{
-				output = value.ToString().Trim();
-			}
+
+			var output = value.ToString().Trim();
 
 			if (output.Length > 30000) //cropping value for stupid Excel
 				output = output.Substring(0, 30000);
 
-			if (output.Contains(columnSeparator) || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
+			if (output.Contains(columnSeparator) || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
 				output = '"' + output.Replace("\"", "\"\"") + '"';
 
 			return output;
@@ -276,5 +277,11 @@ namespace Csv
 
 			return ms;
 		}
+	}
+
+	internal static class ReflectionCache<T>
+	{
+		private static System.Reflection.PropertyInfo[] _properties;
+		public static System.Reflection.PropertyInfo[] Properties => _properties ??= typeof(T).GetProperties();
 	}
 }
