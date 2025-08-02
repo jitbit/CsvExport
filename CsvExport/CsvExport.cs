@@ -44,12 +44,12 @@ namespace Csv
 		/// <summary>
 		/// The list of rows
 		/// </summary>
-		List<List<string>> _rows = new();
+		List<List<object>> _rows = new();
 
 		/// <summary>
 		/// The current row
 		/// </summary>
-		List<string> _currentRow = null;
+		List<object> _currentRow = null;
 
 		/// <summary>
 		/// The string used to separate columns in the output
@@ -113,7 +113,7 @@ namespace Csv
 				while (num >= _currentRow.Count) //fill the current row with nulls until we have the right size
 					_currentRow.Add(null);
 
-				_currentRow[num] = MakeValueCsvFriendly(value, _columnSeparator); //set the value at position
+				_currentRow[num] = value; //set the raw value at position
 			}
 		}
 
@@ -158,19 +158,61 @@ namespace Csv
 		/// </param>
 		public static string MakeValueCsvFriendly(object value, string columnSeparator = ",")
 		{
-			if (value == null) return "";
-			if (value is INullable && ((INullable)value).IsNull) return "";
+			var sb = new StringBuilder();
+			WriteCsvFriendlyValue(value, new StringBuilderCsvWriter(sb), columnSeparator);
+			return sb.ToString();
+		}
+
+		/// <summary>
+		/// Interface for abstracting write operations to different output targets
+		/// </summary>
+		private interface ICsvWriter
+		{
+			void Write(string value);
+			void Write(char value);
+		}
+
+		/// <summary>
+		/// StringBuilder wrapper for ICsvWriter
+		/// </summary>
+		private class StringBuilderCsvWriter : ICsvWriter
+		{
+			private readonly StringBuilder _sb;
+			public StringBuilderCsvWriter(StringBuilder sb) => _sb = sb;
+			public void Write(string value) => _sb.Append(value);
+			public void Write(char value) => _sb.Append(value);
+		}
+
+		/// <summary>
+		/// StreamWriter wrapper for ICsvWriter
+		/// </summary>
+		private class StreamWriterCsvWriter : ICsvWriter
+		{
+			private readonly StreamWriter _sw;
+			public StreamWriterCsvWriter(StreamWriter sw) => _sw = sw;
+			public void Write(string value) => _sw.Write(value);
+			public void Write(char value) => _sw.Write(value);
+		}
+
+		/// <summary>
+		/// Converts a value to CSV-friendly format and writes it directly to an ICsvWriter
+		/// </summary>
+		private static void WriteCsvFriendlyValue(object value, ICsvWriter writer, string columnSeparator = ",")
+		{
+			if (value == null) return;
+			if (value is INullable && ((INullable)value).IsNull) return;
 
 			if (value is DateTime date)
 			{
 				if (date.TimeOfDay.TotalSeconds == 0)
 				{
-					return date.ToString("yyyy-MM-dd");
+					writer.Write(date.ToString("yyyy-MM-dd"));
 				}
 				else
 				{
-					return date.ToString("yyyy-MM-dd HH:mm:ss");
+					writer.Write(date.ToString("yyyy-MM-dd HH:mm:ss"));
 				}
+				return;
 			}
 
 			var output = value.ToString().Trim();
@@ -179,20 +221,26 @@ namespace Csv
 				output = output.Substring(0, 30000);
 
 			if (output.Contains(columnSeparator) || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
-				output = '"' + output.Replace("\"", "\"\"") + '"';
-
-			return output;
+			{
+				writer.Write('"');
+				writer.Write(output.Replace("\"", "\"\""));
+				writer.Write('"');
+			}
+			else
+			{
+				writer.Write(output);
+			}
 		}
 
 		/// <summary>
 		/// Outputs all rows as a CSV, returning one "line" at a time
-		/// Where "line" is a IEnumerable of string values
+		/// Where "line" is a IEnumerable of object values
 		/// </summary>
-		private IEnumerable<IEnumerable<string>> ExportToLines()
+		private IEnumerable<IEnumerable<object>> ExportToLines()
 		{
 			// The header
 			if (_includeHeaderRow)
-				yield return _fields.OrderBy(f => f.Value).Select(f => MakeValueCsvFriendly(f.Key, _columnSeparator));
+				yield return _fields.OrderBy(f => f.Value).Select(f => f.Key);
 
 			// The rows
 			foreach (var row in _rows)
@@ -207,18 +255,22 @@ namespace Csv
 		public string Export()
 		{
 			StringBuilder sb = new StringBuilder();
+			ICsvWriter writer = new StringBuilderCsvWriter(sb);
 
 			if (_includeColumnSeparatorDefinitionPreamble)
 				sb.Append("sep=" + _columnSeparator + "\r\n");
 
 			foreach (var line in ExportToLines())
 			{
+				bool first = true;
 				foreach (var value in line)
 				{
-					sb.Append(value);
-					sb.Append(_columnSeparator);
+					if (!first)
+						sb.Append(_columnSeparator);
+					
+					WriteCsvFriendlyValue(value, writer, _columnSeparator);
+					first = false;
 				}
-				sb.Length = sb.Length - _columnSeparator.Length; //remove the trailing comma (shut up)
 				sb.Append("\r\n");
 			}
 
@@ -254,18 +306,21 @@ namespace Csv
 
 			using (var sw = new StreamWriter(ms, encoding, 1024, leaveOpen: true))
 			{
+				ICsvWriter writer = new StreamWriterCsvWriter(sw);
+
 				if (_includeColumnSeparatorDefinitionPreamble)
 					sw.Write("sep=" + _columnSeparator + "\r\n");
 
 				foreach (var line in ExportToLines())
 				{
-					int i = 0;
+					bool first = true;
 					foreach (var value in line)
 					{
-						sw.Write(value);
-
-						if (++i != _fields.Count)
+						if (!first)
 							sw.Write(_columnSeparator);
+						
+						WriteCsvFriendlyValue(value, writer, _columnSeparator);
+						first = false;
 					}
 					sw.Write("\r\n");
 				}
