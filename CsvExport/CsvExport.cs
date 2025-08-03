@@ -258,7 +258,7 @@ namespace Csv
 			ICsvWriter writer = new StringBuilderCsvWriter(sb);
 
 			if (_includeColumnSeparatorDefinitionPreamble)
-				sb.Append("sep=" + _columnSeparator + "\r\n");
+				sb.Append($"sep={_columnSeparator}\r\n");
 
 			foreach (var line in ExportToLines())
 			{
@@ -309,7 +309,9 @@ namespace Csv
 				ICsvWriter writer = new StreamWriterCsvWriter(sw);
 
 				if (_includeColumnSeparatorDefinitionPreamble)
-					sw.Write("sep=" + _columnSeparator + "\r\n");
+				{
+					sw.Write("sep="); sw.Write(_columnSeparator); sw.Write("\r\n"); //just tiny way to avoid string concatenation
+				}
 
 				foreach (var line in ExportToLines())
 				{

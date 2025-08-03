@@ -232,6 +232,36 @@ namespace UnitTests
 			string csv = myExport.Export();
 			Assert.AreEqual("sep=,", csv.Trim());
 		}
+
+		[TestMethod]
+		public void TestExportAsMemoryStream()
+		{
+			// Arrange
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Region"] = "Los Angeles, USA";
+			myExport["Sales"] = 100000;
+			myExport["Date Opened"] = new DateTime(2003, 12, 31);
+
+			myExport.AddRow();
+			myExport["Region"] = "Canberra \"in\" Australia";
+			myExport["Sales"] = 50000;
+			myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+
+			// Act
+			using var memoryStream = myExport.ExportAsMemoryStream();
+
+			// Assert
+			Assert.IsNotNull(memoryStream);
+			Assert.AreEqual(0, memoryStream.Position, "MemoryStream position should be reset to 0");
+
+			// Read the content and verify it matches expected CSV
+			var content = Encoding.UTF8.GetString(memoryStream.ToArray());
+			var contentWithoutBom = content.Trim(new char[] { '\uFEFF' }); // Remove BOM if present
+
+			var expectedCsv = "sep=,\r\nRegion,Sales,Date Opened\r\n\"Los Angeles, USA\",100000,2003-12-31\r\n\"Canberra \"\"in\"\" Australia\",50000,2005-01-01 09:30:00";
+			Assert.AreEqual(expectedCsv, contentWithoutBom.Trim());
+		}
 	}
 
 	public class MyClass
