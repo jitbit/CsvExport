@@ -230,7 +230,7 @@ namespace Csv
 				}
 				else if (value is ISpanFormattable sf && sf.TryFormat(buffer, out int written, default, CultureInfo.InvariantCulture))
 				{
-					span = ((ReadOnlySpan<char>)buffer[..written]).Trim();
+					span = (ReadOnlySpan<char>)buffer[..written];
 				}
 				else
 				{
