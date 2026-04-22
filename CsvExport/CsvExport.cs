@@ -131,18 +131,18 @@ namespace Csv
 		/// </summary>
 		public void AddRows<T>(IEnumerable<T> list)
 		{
-			if (list.Any())
+			using var e = list.GetEnumerator();
+			if (!e.MoveNext()) return; //empty - skip reflection cache warm-up
+
+			var values = ReflectionCache<T>.Properties;
+			do
 			{
-				var values = ReflectionCache<T>.Properties;
-				foreach (T obj in list)
+				AddRow();
+				foreach (var value in values)
 				{
-					AddRow();
-					foreach (var value in values)
-					{
-						this[value.Name] = value.GetValue(obj, null);
-					}
+					this[value.Name] = value.GetValue(e.Current, null);
 				}
-			}
+			} while (e.MoveNext());
 		}
 
 		/// <summary>
