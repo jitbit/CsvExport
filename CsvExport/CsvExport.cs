@@ -26,6 +26,7 @@ You can also export/compute file using any of following method:
 */
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.IO;
@@ -66,6 +67,8 @@ namespace Csv
 		/// </summary>
 		private readonly bool _includeHeaderRow;
 
+		private SearchValues<char> _searchValues;
+
 		/// <summary>
 		/// Default encoding
 		/// </summary>
@@ -91,6 +94,7 @@ namespace Csv
 			_separatorChar = columnSeparator;
 			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 			_includeHeaderRow = includeHeaderRow;
+			_searchValues = SearchValues.Create($"{columnSeparator}\n\r");
 		}
 
 		/// <summary>
@@ -225,10 +229,7 @@ namespace Csv
 				if (output.Length > 30000) //cropping value for stupid Excel
 					output = output.Substring(0, 30000);
 
-				//fast path: single-char separator uses Contains(char) (ordinal, no culture table lookup)
-				bool containsSeparator = output.Contains(_separatorChar);
-
-				if (containsSeparator || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
+				if (output.AsSpan().ContainsAny(_searchValues))
 				{
 					writer.Write('"');
 					writer.Write(output.Replace("\"", "\"\""));
