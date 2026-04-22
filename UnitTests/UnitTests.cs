@@ -262,6 +262,100 @@ namespace UnitTests
 			var expectedCsv = "sep=,\r\nRegion,Sales,Date Opened\r\n\"Los Angeles, USA\",100000,2003-12-31\r\n\"Canberra \"\"in\"\" Australia\",50000,2005-01-01 09:30:00";
 			Assert.AreEqual(expectedCsv, contentWithoutBom.Trim());
 		}
+
+		[TestMethod]
+		public void TestMakeValueCsvFriendly()
+		{
+			Assert.AreEqual("", CsvExport.MakeValueCsvFriendly(null));
+			Assert.AreEqual("123", CsvExport.MakeValueCsvFriendly(123));
+			Assert.AreEqual("\"Los Angeles, USA\"", CsvExport.MakeValueCsvFriendly("Los Angeles, USA"));
+			Assert.AreEqual("\"\"\"quoted\"\"\"", CsvExport.MakeValueCsvFriendly("\"quoted\""));
+			Assert.AreEqual("2003-12-31", CsvExport.MakeValueCsvFriendly(new DateTime(2003, 12, 31)));
+			Assert.AreEqual("2005-01-01 09:30:00", CsvExport.MakeValueCsvFriendly(new DateTime(2005, 1, 1, 9, 30, 0)));
+
+			// custom separator - semicolon triggers quoting, comma does not
+			Assert.AreEqual("a,b", CsvExport.MakeValueCsvFriendly("a,b", ';'));
+			Assert.AreEqual("\"a;b\"", CsvExport.MakeValueCsvFriendly("a;b", ';'));
+		}
+
+		[TestMethod]
+		public void TestNewColumnIntroducedByLaterRow()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["A"] = 1;
+
+			myExport.AddRow();
+			myExport["A"] = 2;
+			myExport["B"] = "new"; //column B appears only starting from row 2
+
+			string csv = myExport.Export();
+			Assert.IsTrue(csv.Trim() == "sep=,\r\nA,B\r\n1\r\n2,new", csv);
+		}
+
+		[TestMethod]
+		public void TestWriteToStream()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Region"] = "Los Angeles, USA";
+			myExport["Sales"] = 100000;
+
+			using var ms = new MemoryStream();
+			myExport.WriteToStream(ms);
+
+			Assert.IsTrue(ms.CanWrite, "Stream should not be closed by WriteToStream");
+
+			var content = Encoding.UTF8.GetString(ms.ToArray()).Trim(new char[] { '﻿' });
+			Assert.AreEqual("sep=,\r\nRegion,Sales\r\n\"Los Angeles, USA\",100000", content.Trim());
+		}
+
+		[TestMethod]
+		public void TestCustomEncoding()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Name"] = "Москва"; //non-ASCII
+
+			var bytes = myExport.ExportToBytes(Encoding.Unicode);
+
+			//UTF-16 LE BOM
+			Assert.IsTrue(bytes[0] == 0xFF && bytes[1] == 0xFE);
+
+			var content = Encoding.Unicode.GetString(bytes).Trim(new char[] { '﻿' });
+			Assert.IsTrue(content.Contains("Москва"));
+		}
+
+		[TestMethod]
+		public void TestExportToBytesHasBom()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Name"] = "John";
+
+			var bytes = myExport.ExportToBytes();
+
+			//UTF-8 BOM
+			Assert.IsTrue(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF);
+		}
+
+		[TestMethod]
+		public void TestExportAndWriteToStreamMatch()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Region"] = "Canberra \"in\" Australia";
+			myExport["Sales"] = 50000;
+			myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
+
+			string fromExport = myExport.Export();
+
+			using var ms = new MemoryStream();
+			myExport.WriteToStream(ms);
+			string fromStream = Encoding.UTF8.GetString(ms.ToArray()).Trim(new char[] { '﻿' });
+
+			Assert.AreEqual(fromExport, fromStream);
+		}
 	}
 
 	public class MyClass
