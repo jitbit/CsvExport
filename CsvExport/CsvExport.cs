@@ -169,7 +169,9 @@ namespace Csv
 		}
 
 		/// <summary>
-		/// Interface for abstracting write operations to different output targets
+		/// Interface for abstracting write operations to different output targets.
+		/// Implemented by readonly structs and consumed through a generic constraint so the JIT
+		/// specializes and inlines each Write call (no virtual dispatch on the hot path).
 		/// </summary>
 		private interface ICsvWriter
 		{
@@ -177,10 +179,7 @@ namespace Csv
 			void Write(ReadOnlySpan<char> value);
 		}
 
-		/// <summary>
-		/// StringBuilder wrapper for ICsvWriter
-		/// </summary>
-		private class StringBuilderCsvWriter : ICsvWriter
+		private readonly struct StringBuilderCsvWriter : ICsvWriter
 		{
 			private readonly StringBuilder _sb;
 			public StringBuilderCsvWriter(StringBuilder sb) => _sb = sb;
@@ -188,10 +187,7 @@ namespace Csv
 			public void Write(ReadOnlySpan<char> value) => _sb.Append(value);
 		}
 
-		/// <summary>
-		/// StreamWriter wrapper for ICsvWriter
-		/// </summary>
-		private class StreamWriterCsvWriter : ICsvWriter
+		private readonly struct StreamWriterCsvWriter : ICsvWriter
 		{
 			private readonly StreamWriter _sw;
 			public StreamWriterCsvWriter(StreamWriter sw) => _sw = sw;
@@ -202,7 +198,7 @@ namespace Csv
 		/// <summary>
 		/// Writes all values of a line (separated by the column separator) to an ICsvWriter, each converted to CSV-friendly format.
 		/// </summary>
-		private void WriteCsvFriendlyValues(IEnumerable<object> line, ICsvWriter writer)
+		private void WriteCsvFriendlyValues<TWriter>(IEnumerable<object> line, TWriter writer) where TWriter : struct, ICsvWriter
 		{
 			Span<char> buffer = stackalloc char[128];
 			bool first = true;
@@ -290,7 +286,7 @@ namespace Csv
 		public string Export()
 		{
 			StringBuilder sb = new StringBuilder();
-			ICsvWriter writer = new StringBuilderCsvWriter(sb);
+			var writer = new StringBuilderCsvWriter(sb);
 
 			if (_includeColumnSeparatorDefinitionPreamble)
 				sb.Append($"sep={_separatorChar}\r\n");
@@ -342,7 +338,7 @@ namespace Csv
 				stream.Write(preamble, 0, preamble.Length);
 
 			using var sw = new StreamWriter(stream, encoding, 1024, leaveOpen: true);
-			ICsvWriter writer = new StreamWriterCsvWriter(sw);
+			var writer = new StreamWriterCsvWriter(sw);
 
 			if (_includeColumnSeparatorDefinitionPreamble)
 			{
