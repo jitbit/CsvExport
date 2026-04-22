@@ -57,6 +57,12 @@ namespace Csv
 		private readonly string _columnSeparator;
 
 		/// <summary>
+		/// When the separator is a single character, cached here for fast-path checks.
+		/// <c>'\0'</c> means the separator is multi-char (use the string path).
+		/// </summary>
+		private readonly char _separatorChar;
+
+		/// <summary>
 		/// Whether to include the preamble that declares which column separator is used in the output
 		/// </summary>
 		private readonly bool _includeColumnSeparatorDefinitionPreamble;
@@ -89,6 +95,7 @@ namespace Csv
 		public CsvExport(string columnSeparator = ",", bool includeColumnSeparatorDefinitionPreamble = true, bool includeHeaderRow = true)
 		{
 			_columnSeparator = columnSeparator;
+			_separatorChar = columnSeparator.Length == 1 ? columnSeparator[0] : '\0';
 			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 			_includeHeaderRow = includeHeaderRow;
 		}
@@ -159,7 +166,8 @@ namespace Csv
 		public static string MakeValueCsvFriendly(object value, string columnSeparator = ",")
 		{
 			var sb = new StringBuilder();
-			WriteCsvFriendlyValue(value, new StringBuilderCsvWriter(sb), columnSeparator);
+			var sepChar = columnSeparator.Length == 1 ? columnSeparator[0] : '\0';
+			WriteCsvFriendlyValue(value, new StringBuilderCsvWriter(sb), columnSeparator, sepChar);
 			return sb.ToString();
 		}
 
@@ -197,7 +205,7 @@ namespace Csv
 		/// <summary>
 		/// Converts a value to CSV-friendly format and writes it directly to an ICsvWriter
 		/// </summary>
-		private static void WriteCsvFriendlyValue(object value, ICsvWriter writer, string columnSeparator = ",")
+		private static void WriteCsvFriendlyValue(object value, ICsvWriter writer, string columnSeparator, char separatorChar)
 		{
 			if (value == null) return;
 			if (value is INullable && ((INullable)value).IsNull) return;
@@ -220,7 +228,12 @@ namespace Csv
 			if (output.Length > 30000) //cropping value for stupid Excel
 				output = output.Substring(0, 30000);
 
-			if (output.Contains(columnSeparator) || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
+			//fast path: single-char separator uses Contains(char) (ordinal, no culture table lookup)
+			bool containsSeparator = separatorChar != '\0'
+				? output.Contains(separatorChar)
+				: output.Contains(columnSeparator);
+
+			if (containsSeparator || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
 			{
 				writer.Write('"');
 				writer.Write(output.Replace("\"", "\"\""));
@@ -266,9 +279,12 @@ namespace Csv
 				foreach (var value in line)
 				{
 					if (!first)
-						sb.Append(_columnSeparator);
-					
-					WriteCsvFriendlyValue(value, writer, _columnSeparator);
+					{
+						if (_separatorChar != '\0') sb.Append(_separatorChar);
+						else sb.Append(_columnSeparator);
+					}
+
+					WriteCsvFriendlyValue(value, writer, _columnSeparator, _separatorChar);
 					first = false;
 				}
 				sb.Append("\r\n");
@@ -328,9 +344,12 @@ namespace Csv
 				foreach (var value in line)
 				{
 					if (!first)
-						sw.Write(_columnSeparator);
+					{
+						if (_separatorChar != '\0') sw.Write(_separatorChar);
+						else sw.Write(_columnSeparator);
+					}
 
-					WriteCsvFriendlyValue(value, writer, _columnSeparator);
+					WriteCsvFriendlyValue(value, writer, _columnSeparator, _separatorChar);
 					first = false;
 				}
 				sw.Write("\r\n");
