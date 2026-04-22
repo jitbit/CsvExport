@@ -278,13 +278,12 @@ namespace Csv
 		}
 
 		/// <summary>
-		/// Exports to a file
+		/// Exports directly to a file, streaming to disk without buffering the whole CSV in memory.
 		/// </summary>
 		public void ExportToFile(string path, Encoding encoding = null)
 		{
 			using var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
-			using var ms = ExportAsMemoryStream(encoding);
-			ms.WriteTo(fs);
+			WriteToStream(fs, encoding);
 		}
 
 		/// <summary>
@@ -299,40 +298,43 @@ namespace Csv
 		public MemoryStream ExportAsMemoryStream(Encoding encoding = null)
 		{
 			MemoryStream ms = new MemoryStream();
+			WriteToStream(ms, encoding);
+			ms.Position = 0;
+			return ms;
+		}
 
+		/// <summary>
+		/// Writes the CSV directly to the given stream using the specified encoding.
+		/// The stream is not closed; the caller owns its lifetime.
+		/// </summary>
+		public void WriteToStream(Stream stream, Encoding encoding = null)
+		{
 			encoding = encoding ?? _defaultEncoding;
 			var preamble = encoding.GetPreamble();
-			ms.Write(preamble, 0, preamble.Length);
+			if (preamble.Length > 0)
+				stream.Write(preamble, 0, preamble.Length);
 
-			using (var sw = new StreamWriter(ms, encoding, 1024, leaveOpen: true))
+			using var sw = new StreamWriter(stream, encoding, 1024, leaveOpen: true);
+			ICsvWriter writer = new StreamWriterCsvWriter(sw);
+
+			if (_includeColumnSeparatorDefinitionPreamble)
 			{
-				ICsvWriter writer = new StreamWriterCsvWriter(sw);
-
-				if (_includeColumnSeparatorDefinitionPreamble)
-				{
-					sw.Write("sep="); sw.Write(_columnSeparator); sw.Write("\r\n"); //just tiny way to avoid string concatenation
-				}
-
-				foreach (var line in ExportToLines())
-				{
-					bool first = true;
-					foreach (var value in line)
-					{
-						if (!first)
-							sw.Write(_columnSeparator);
-						
-						WriteCsvFriendlyValue(value, writer, _columnSeparator);
-						first = false;
-					}
-					sw.Write("\r\n");
-				}
-
-				sw.Flush(); //otherwise we're risking empty stream
+				sw.Write("sep="); sw.Write(_columnSeparator); sw.Write("\r\n"); //just tiny way to avoid string concatenation
 			}
 
-			ms.Position = 0;
+			foreach (var line in ExportToLines())
+			{
+				bool first = true;
+				foreach (var value in line)
+				{
+					if (!first)
+						sw.Write(_columnSeparator);
 
-			return ms;
+					WriteCsvFriendlyValue(value, writer, _columnSeparator);
+					first = false;
+				}
+				sw.Write("\r\n");
+			}
 		}
 	}
 
