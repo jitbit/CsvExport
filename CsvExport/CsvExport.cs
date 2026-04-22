@@ -166,8 +166,7 @@ namespace Csv
 		public static string MakeValueCsvFriendly(object value, string columnSeparator = ",")
 		{
 			var sb = new StringBuilder();
-			var sepChar = columnSeparator.Length == 1 ? columnSeparator[0] : '\0';
-			WriteCsvFriendlyValue(value, new StringBuilderCsvWriter(sb), columnSeparator, sepChar);
+			new CsvExport(columnSeparator).WriteCsvFriendlyValues([value], new StringBuilderCsvWriter(sb));
 			return sb.ToString();
 		}
 
@@ -203,45 +202,52 @@ namespace Csv
 		}
 
 		/// <summary>
-		/// Converts a value to CSV-friendly format and writes it directly to an ICsvWriter
+		/// Writes all values of a line (separated by the column separator) to an ICsvWriter, each converted to CSV-friendly format.
 		/// </summary>
-		private static void WriteCsvFriendlyValue(object value, ICsvWriter writer, string columnSeparator, char separatorChar)
+		private void WriteCsvFriendlyValues(IEnumerable<object> line, ICsvWriter writer)
 		{
-			if (value == null) return;
-			if (value is INullable && ((INullable)value).IsNull) return;
-
-			if (value is DateTime date)
+			bool first = true;
+			foreach (var value in line)
 			{
-				if (date.TimeOfDay.TotalSeconds == 0)
+				if (!first)
 				{
-					writer.Write(date.ToString("yyyy-MM-dd"));
+					if (_separatorChar != '\0') writer.Write(_separatorChar);
+					else writer.Write(_columnSeparator);
+				}
+				first = false;
+
+				if (value == null) continue;
+				if (value is INullable nullable && nullable.IsNull) continue;
+
+				if (value is DateTime date)
+				{
+					if (date.TimeOfDay.TotalSeconds == 0)
+						writer.Write(date.ToString("yyyy-MM-dd"));
+					else
+						writer.Write(date.ToString("yyyy-MM-dd HH:mm:ss"));
+					continue;
+				}
+
+				var output = value.ToString().Trim();
+
+				if (output.Length > 30000) //cropping value for stupid Excel
+					output = output.Substring(0, 30000);
+
+				//fast path: single-char separator uses Contains(char) (ordinal, no culture table lookup)
+				bool containsSeparator = _separatorChar != '\0'
+					? output.Contains(_separatorChar)
+					: output.Contains(_columnSeparator);
+
+				if (containsSeparator || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
+				{
+					writer.Write('"');
+					writer.Write(output.Replace("\"", "\"\""));
+					writer.Write('"');
 				}
 				else
 				{
-					writer.Write(date.ToString("yyyy-MM-dd HH:mm:ss"));
+					writer.Write(output);
 				}
-				return;
-			}
-
-			var output = value.ToString().Trim();
-
-			if (output.Length > 30000) //cropping value for stupid Excel
-				output = output.Substring(0, 30000);
-
-			//fast path: single-char separator uses Contains(char) (ordinal, no culture table lookup)
-			bool containsSeparator = separatorChar != '\0'
-				? output.Contains(separatorChar)
-				: output.Contains(columnSeparator);
-
-			if (containsSeparator || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
-			{
-				writer.Write('"');
-				writer.Write(output.Replace("\"", "\"\""));
-				writer.Write('"');
-			}
-			else
-			{
-				writer.Write(output);
 			}
 		}
 
@@ -275,18 +281,7 @@ namespace Csv
 
 			foreach (var line in ExportToLines())
 			{
-				bool first = true;
-				foreach (var value in line)
-				{
-					if (!first)
-					{
-						if (_separatorChar != '\0') sb.Append(_separatorChar);
-						else sb.Append(_columnSeparator);
-					}
-
-					WriteCsvFriendlyValue(value, writer, _columnSeparator, _separatorChar);
-					first = false;
-				}
+				WriteCsvFriendlyValues(line, writer);
 				sb.Append("\r\n");
 			}
 
@@ -340,18 +335,7 @@ namespace Csv
 
 			foreach (var line in ExportToLines())
 			{
-				bool first = true;
-				foreach (var value in line)
-				{
-					if (!first)
-					{
-						if (_separatorChar != '\0') sw.Write(_separatorChar);
-						else sw.Write(_columnSeparator);
-					}
-
-					WriteCsvFriendlyValue(value, writer, _columnSeparator, _separatorChar);
-					first = false;
-				}
+				WriteCsvFriendlyValues(line, writer);
 				sw.Write("\r\n");
 			}
 		}
