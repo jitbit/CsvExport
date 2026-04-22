@@ -139,13 +139,13 @@ namespace Csv
 			using var e = list.GetEnumerator();
 			if (!e.MoveNext()) return; //empty - skip reflection cache warm-up
 
-			var values = ReflectionCache<T>.Properties;
+			var accessors = ReflectionCache<T>.Accessors;
 			do
 			{
 				AddRow();
-				foreach (var value in values)
+				foreach (var a in accessors)
 				{
-					this[value.Name] = value.GetValue(e.Current, null);
+					this[a.Name] = a.Getter(e.Current);
 				}
 			} while (e.MoveNext());
 		}
@@ -355,7 +355,33 @@ namespace Csv
 
 	internal static class ReflectionCache<T>
 	{
-		private static System.Reflection.PropertyInfo[] _properties;
-		public static System.Reflection.PropertyInfo[] Properties => _properties ??= typeof(T).GetProperties();
+		public readonly struct Accessor
+		{
+			public readonly string Name;
+			public readonly Func<T, object> Getter;
+			public Accessor(string name, Func<T, object> getter) { Name = name; Getter = getter; }
+		}
+
+		private static Accessor[] _accessors;
+
+		public static Accessor[] Accessors => _accessors ??= Build();
+
+		private static Accessor[] Build()
+		{
+			var props = typeof(T).GetProperties();
+			var result = new Accessor[props.Length];
+			var param = System.Linq.Expressions.Expression.Parameter(typeof(T), "x");
+			for (int i = 0; i < props.Length; i++)
+			{
+				var p = props[i];
+				// (T x) => (object)x.Prop   — boxes value types as needed
+				var body = System.Linq.Expressions.Expression.Convert(
+					System.Linq.Expressions.Expression.Property(param, p),
+					typeof(object));
+				var getter = System.Linq.Expressions.Expression.Lambda<Func<T, object>>(body, param).Compile();
+				result[i] = new Accessor(p.Name, getter);
+			}
+			return result;
+		}
 	}
 }
