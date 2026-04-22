@@ -52,13 +52,7 @@ namespace Csv
 		List<object> _currentRow = null;
 
 		/// <summary>
-		/// The string used to separate columns in the output
-		/// </summary>
-		private readonly string _columnSeparator;
-
-		/// <summary>
-		/// When the separator is a single character, cached here for fast-path checks.
-		/// <c>'\0'</c> means the separator is multi-char (use the string path).
+		/// The character used to separate columns in the output
 		/// </summary>
 		private readonly char _separatorChar;
 
@@ -92,10 +86,9 @@ namespace Csv
 		/// <param name="includeHeaderRow">
 		/// Whether to include the header row with the columns names in the export
 		/// </param>
-		public CsvExport(string columnSeparator = ",", bool includeColumnSeparatorDefinitionPreamble = true, bool includeHeaderRow = true)
+		public CsvExport(char columnSeparator = ',', bool includeColumnSeparatorDefinitionPreamble = true, bool includeHeaderRow = true)
 		{
-			_columnSeparator = columnSeparator;
-			_separatorChar = columnSeparator.Length == 1 ? columnSeparator[0] : '\0';
+			_separatorChar = columnSeparator;
 			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 			_includeHeaderRow = includeHeaderRow;
 		}
@@ -163,7 +156,7 @@ namespace Csv
 		/// The string used to separate columns in the output.
 		/// By default this is a comma so that the generated output is a CSV document.
 		/// </param>
-		public static string MakeValueCsvFriendly(object value, string columnSeparator = ",")
+		public static string MakeValueCsvFriendly(object value, char columnSeparator = ',')
 		{
 			var sb = new StringBuilder();
 			new CsvExport(columnSeparator).WriteCsvFriendlyValues([value], new StringBuilderCsvWriter(sb));
@@ -211,8 +204,7 @@ namespace Csv
 			{
 				if (!first)
 				{
-					if (_separatorChar != '\0') writer.Write(_separatorChar);
-					else writer.Write(_columnSeparator);
+					writer.Write(_separatorChar);
 				}
 				first = false;
 
@@ -234,9 +226,7 @@ namespace Csv
 					output = output.Substring(0, 30000);
 
 				//fast path: single-char separator uses Contains(char) (ordinal, no culture table lookup)
-				bool containsSeparator = _separatorChar != '\0'
-					? output.Contains(_separatorChar)
-					: output.Contains(_columnSeparator);
+				bool containsSeparator = output.Contains(_separatorChar);
 
 				if (containsSeparator || output.Contains('\"') || output.Contains('\n') || output.Contains('\r'))
 				{
@@ -277,7 +267,7 @@ namespace Csv
 			ICsvWriter writer = new StringBuilderCsvWriter(sb);
 
 			if (_includeColumnSeparatorDefinitionPreamble)
-				sb.Append($"sep={_columnSeparator}\r\n");
+				sb.Append($"sep={_separatorChar}\r\n");
 
 			foreach (var line in ExportToLines())
 			{
@@ -330,7 +320,7 @@ namespace Csv
 
 			if (_includeColumnSeparatorDefinitionPreamble)
 			{
-				sw.Write("sep="); sw.Write(_columnSeparator); sw.Write("\r\n"); //just tiny way to avoid string concatenation
+				sw.Write("sep="); sw.Write(_separatorChar); sw.Write("\r\n"); //just tiny way to avoid string concatenation
 			}
 
 			foreach (var line in ExportToLines())

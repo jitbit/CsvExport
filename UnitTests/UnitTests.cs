@@ -118,7 +118,7 @@ namespace UnitTests
 		public void TestConstructorParameters()
 		{
 			// Test custom separator
-			var export1 = new CsvExport(";");
+			var export1 = new CsvExport(';');
 			export1.AddRow();
 			export1["Name"] = "John";
 			export1["Value"] = "Test;Data";
@@ -128,7 +128,7 @@ namespace UnitTests
 			Assert.IsTrue(result1.Contains("\"Test;Data\""));
 
 			// Test no preamble
-			var export2 = new CsvExport(",", false);
+			var export2 = new CsvExport(',', false);
 			export2.AddRow();
 			export2["Name"] = "John";
 			string result2 = export2.Export();
@@ -136,7 +136,7 @@ namespace UnitTests
 			Assert.IsTrue(result2.StartsWith("Name\r\n"));
 
 			// Test no header
-			var export3 = new CsvExport(",", true, false);
+			var export3 = new CsvExport(',', true, false);
 			export3.AddRow();
 			export3["Name"] = "John";
 			string result3 = export3.Export();
