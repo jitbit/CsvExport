@@ -3,23 +3,27 @@ A very simple and very fast CSV-export tool for C#.
 
 [![.NET](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml/badge.svg)](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml)
 
+## V3 Breaking changes:
+
+- .NET 8 targeting (use v2 for .NET Framework, we'll backport critical fixes)
+- Uses `char` instead of `string` for column separator
+
 ## Features
 
 1. Excel-compatible export (separator detected automatically, friendly-trimming rows and values for compatibility)
 2. Escapes commas, quotes, multiline text
 3. Exports dates in timezone-proof format
 4. Extremely easy to use
-5. NET Standard 2.0 library (compatible with both .NET Core and .NET Framework)
-6. 30 times faster than CsvHelper
-7. 4-times less memory usage
+5. 30 times faster than CsvHelper
+6. 4-times less memory usage
 
 ## Benchmarks
 
-|            Method |        Mean |     Error |   StdDev |    Gen0 |   Gen1 | Allocated |
-|------------------ |------------:|----------:|---------:|--------:|-------:|----------:|
-| 😟        CsvHelper | 1,300.38 us | 32.043 us | 1.756 us | 17.5781 | 7.8125 | 114.25 KB |
-| ✅ CsvExport_Manual |    31.22 us |  5.750 us | 0.315 us |  4.7607 | 0.2441 |  29.37 KB |
-| ✅  CsvExport_Typed |    52.68 us |  1.453 us | 0.080 us |  4.7607 | 0.1221 |  29.46 KB |
+|                   Method |      Mean |      Error |    StdDev |   Gen0 |   Gen1 | Allocated |
+|------------------------- |----------:|-----------:|----------:|-------:|-------:|----------:|
+| 😟             CsvHelper | 372.90 us | 390.842 us | 21.423 us | 9.7656 | 4.8828 |   85.4 KB |
+| ✅      CsvExport_Manual |  12.71 us |   1.040 us |  0.057 us | 3.5858 | 0.1984 |  29.35 KB |
+| ✅ CsvExport_GenericType |  13.22 us |   1.240 us |  0.068 us | 3.5858 | 0.2289 |  29.39 KB |
 
 This benchmark is generating a 100-line CSV file with 4 columns. Check the "SpeedBenchmarks" code.
 
