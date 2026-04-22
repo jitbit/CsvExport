@@ -29,6 +29,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -94,7 +95,7 @@ namespace Csv
 			_separatorChar = columnSeparator;
 			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 			_includeHeaderRow = includeHeaderRow;
-			_searchValues = SearchValues.Create($"{columnSeparator}\n\r");
+			_searchValues = SearchValues.Create($"{columnSeparator}\n\r\"");
 		}
 
 		/// <summary>
@@ -224,7 +225,9 @@ namespace Csv
 					continue;
 				}
 
-				var output = value.ToString().Trim();
+				var output = (value is IFormattable f
+					? f.ToString(null, CultureInfo.InvariantCulture)
+					: value.ToString()).Trim();
 
 				if (output.Length > 30000) //cropping value for stupid Excel
 					output = output.Substring(0, 30000);
