@@ -173,8 +173,8 @@ namespace Csv
 		/// </summary>
 		private interface ICsvWriter
 		{
-			void Write(string value);
 			void Write(char value);
+			void Write(ReadOnlySpan<char> value);
 		}
 
 		/// <summary>
@@ -184,8 +184,8 @@ namespace Csv
 		{
 			private readonly StringBuilder _sb;
 			public StringBuilderCsvWriter(StringBuilder sb) => _sb = sb;
-			public void Write(string value) => _sb.Append(value);
 			public void Write(char value) => _sb.Append(value);
+			public void Write(ReadOnlySpan<char> value) => _sb.Append(value);
 		}
 
 		/// <summary>
@@ -195,8 +195,8 @@ namespace Csv
 		{
 			private readonly StreamWriter _sw;
 			public StreamWriterCsvWriter(StreamWriter sw) => _sw = sw;
-			public void Write(string value) => _sw.Write(value);
 			public void Write(char value) => _sw.Write(value);
+			public void Write(ReadOnlySpan<char> value) => _sw.Write(value);
 		}
 
 		/// <summary>
@@ -204,6 +204,7 @@ namespace Csv
 		/// </summary>
 		private void WriteCsvFriendlyValues(IEnumerable<object> line, ICsvWriter writer)
 		{
+			Span<char> buffer = stackalloc char[128];
 			bool first = true;
 			foreach (var value in line)
 			{
@@ -216,31 +217,52 @@ namespace Csv
 				if (value == null) continue;
 				if (value is INullable nullable && nullable.IsNull) continue;
 
+				// Format into a stack buffer when possible to avoid allocating a string per cell.
+				scoped ReadOnlySpan<char> span;
+				string fallback = null;
+
 				if (value is DateTime date)
 				{
-					if (date.TimeOfDay.TotalSeconds == 0)
-						writer.Write(date.ToString("yyyy-MM-dd"));
+					var format = date.TimeOfDay.TotalSeconds == 0 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
+					if (date.TryFormat(buffer, out int written, format, CultureInfo.InvariantCulture))
+						span = buffer[..written];
 					else
-						writer.Write(date.ToString("yyyy-MM-dd HH:mm:ss"));
-					continue;
+					{
+						fallback = date.ToString(format, CultureInfo.InvariantCulture);
+						span = fallback.AsSpan();
+					}
+				}
+				else if (value is ISpanFormattable sf && sf.TryFormat(buffer, out int written, default, CultureInfo.InvariantCulture))
+				{
+					span = ((ReadOnlySpan<char>)buffer[..written]).Trim();
+				}
+				else
+				{
+					fallback = (value is IFormattable f
+						? f.ToString(null, CultureInfo.InvariantCulture)
+						: value.ToString()).Trim();
+					span = fallback.AsSpan();
 				}
 
-				var output = (value is IFormattable f
-					? f.ToString(null, CultureInfo.InvariantCulture)
-					: value.ToString()).Trim();
+				if (span.Length > 30000) //cropping value for stupid Excel
+					span = span[..30000];
 
-				if (output.Length > 30000) //cropping value for stupid Excel
-					output = output.Substring(0, 30000);
-
-				if (output.AsSpan().ContainsAny(_searchValues))
+				if (span.ContainsAny(_searchValues))
 				{
 					writer.Write('"');
-					writer.Write(output.Replace("\"", "\"\""));
+					int idx;
+					while ((idx = span.IndexOf('"')) >= 0)
+					{
+						writer.Write(span[..idx]);
+						writer.Write("\"\"");
+						span = span[(idx + 1)..];
+					}
+					writer.Write(span);
 					writer.Write('"');
 				}
 				else
 				{
-					writer.Write(output);
+					writer.Write(span);
 				}
 			}
 		}
