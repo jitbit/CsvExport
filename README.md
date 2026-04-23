@@ -46,8 +46,8 @@ myExport["Region"] = "Canberra \"in\" Australia";
 myExport["Sales"] = 50000;
 myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
 
-///ASP.NET MVC action example
-return File(myExport.ExportAsMemoryStream(), "text/csv", "results.csv");
+//save as file
+myExport.ExportToFile("results.csv");
 ```
 
 For generating CSV out of a typed `List<T>` of objects:
