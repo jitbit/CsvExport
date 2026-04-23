@@ -81,7 +81,26 @@ var myExport = new CsvExport(
 );
 ```
 
-Also, methods `ExportToFile` and `ExportAsMemoryStream` and `ExportToBytes` offer an optional encoding parameter.
+Also, methods `ExportToFile` and `WriteToStream` and `ExportToBytes` offer an optional encoding parameter.
+
+### Using with ASP.NET Core:
+
+For big CSV files (megabytes) use `WriteToStreamAsync` and write to `Response.Body` directly. This is very important to save memory usage. Here's a handy example:
+
+```c#
+public class CsvExportResult(Csv.CsvExport csv, string fileName) : ActionResult
+{
+	public override Task ExecuteResultAsync(ActionContext ctx)
+	{
+		var res = ctx.HttpContext.Response;
+		res.ContentType = "text/csv";
+		res.Headers.ContentDisposition = $"attachment; filename=\"{fileName}\"";
+		return csv.WriteToStreamAsync(res.Body, cancellationToken: ctx.HttpContext.RequestAborted);
+	}
+}
+```
+
+Use like this: `return new CsvExportResult(csvExport, "filename.csv");`
 
 ### License
 
