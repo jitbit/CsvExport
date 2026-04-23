@@ -332,12 +332,7 @@ namespace Csv
 		/// </summary>
 		public void WriteToStream(Stream stream, Encoding encoding = null)
 		{
-			encoding = encoding ?? _defaultEncoding;
-			var preamble = encoding.GetPreamble();
-			if (preamble.Length > 0)
-				stream.Write(preamble, 0, preamble.Length);
-
-			using var sw = new StreamWriter(stream, encoding, 1024, leaveOpen: true);
+			using var sw = new StreamWriter(stream, encoding ?? _defaultEncoding, 1024, leaveOpen: true); //streamwriter writes BOM automatically if we're at the start of the stream
 			var writer = new StreamWriterCsvWriter(sw);
 
 			if (_includeColumnSeparatorDefinitionPreamble)
