@@ -85,7 +85,7 @@ Also, methods `ExportToFile` and `WriteToStream` and `ExportToBytes` offer an op
 
 ### Using with ASP.NET Core:
 
-For big CSV files (megabytes) use `WriteToStreamAsync` and write to `Response.Body` directly. This is very important to save memory usage. Here's a handy example:
+For big CSV files (megabytes) use `WriteToStreamAsync` and write to `Response.Body` directly. This is very important to save memory usage. Here's a handy heper class:
 
 ```c#
 public class CsvExportResult(Csv.CsvExport csv, string fileName) : ActionResult
@@ -98,9 +98,10 @@ public class CsvExportResult(Csv.CsvExport csv, string fileName) : ActionResult
 		return csv.WriteToStreamAsync(res.Body, cancellationToken: ctx.HttpContext.RequestAborted);
 	}
 }
-```
 
-Use like this: `return new CsvExportResult(csvExport, "filename.csv");`
+//usage in MVC action
+return new CsvExportResult(csvExport, "filename.csv");
+```
 
 ### License
 
