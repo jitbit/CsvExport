@@ -311,6 +311,32 @@ namespace UnitTests
 		}
 
 		[TestMethod]
+		public async Task TestWriteToStreamAsync()
+		{
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Region"] = "Los Angeles, USA";
+			myExport["Sales"] = 100000;
+
+			myExport.AddRow();
+			myExport["Region"] = "Canberra \"in\" Australia";
+			myExport["Sales"] = 50000;
+
+			using var ms = new MemoryStream();
+			await myExport.WriteToStreamAsync(ms);
+
+			Assert.IsTrue(ms.CanWrite, "Stream should not be closed by WriteToStreamAsync");
+
+			var content = Encoding.UTF8.GetString(ms.ToArray()).Trim(new char[] { '﻿' });
+			Assert.AreEqual("sep=,\r\nRegion,Sales\r\n\"Los Angeles, USA\",100000\r\n\"Canberra \"\"in\"\" Australia\",50000", content.Trim());
+
+			//should match the sync version exactly
+			using var ms2 = new MemoryStream();
+			myExport.WriteToStream(ms2);
+			CollectionAssert.AreEqual(ms2.ToArray(), ms.ToArray());
+		}
+
+		[TestMethod]
 		public void TestCustomEncoding()
 		{
 			var myExport = new CsvExport();
