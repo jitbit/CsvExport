@@ -75,7 +75,7 @@ Configuring is done via constructor parameters:
 
 ```c#
 var myExport = new CsvExport(
-	columnSeparator: ",",
+	columnSeparator: ',',
 	includeColumnSeparatorDefinitionPreamble: true, //Excel wants this in CSV files
 	includeHeaderRow: true
 );
