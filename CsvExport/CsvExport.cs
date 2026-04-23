@@ -33,6 +33,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Csv
 {
@@ -345,6 +347,45 @@ namespace Csv
 				WriteCsvFriendlyValues(line, writer);
 				sw.Write("\r\n");
 			}
+		}
+
+		/// <summary>
+		/// Async version of <see cref="WriteToStream"/>. Use this for streams that disallow
+		/// sync I/O (e.g. ASP.NET Core Response.Body).
+		/// Streams row-by-row — peak memory is bounded by the widest row, not the file size.
+		/// The stream is not closed; the caller owns its lifetime.
+		/// </summary>
+		public async Task WriteToStreamAsync(Stream stream, Encoding encoding = null, CancellationToken cancellationToken = default)
+		{
+			// Use a MemoryStream as an intermediate buffer. Otherwise we either duplicate WriteCsvFriendlyValues as async
+			// or rewrite ICsvWriter as a class with async methods which will ruin JIT inlining optimizations
+			using var ms = new MemoryStream();
+			using (var sw = new StreamWriter(ms, encoding ?? _defaultEncoding, 1024, leaveOpen: true)) //StreamWriter handles the BOM automatically on first write
+			{
+				var writer = new StreamWriterCsvWriter(sw);
+
+				if (_includeColumnSeparatorDefinitionPreamble)
+				{
+					sw.Write("sep="); sw.Write(_separatorChar); sw.Write("\r\n");
+				}
+
+				foreach (var line in ExportToLines())
+				{
+					WriteCsvFriendlyValues(line, writer);
+					sw.Write("\r\n");
+					sw.Flush(); //push StreamWriter's char buffer into the local MemoryStream (sync but in-memory, so safe)
+
+					if (ms.Length > 0)
+					{
+						//drain the accumulated bytes to the real destination asynchronously, then reuse the MemoryStream's buffer
+						await stream.WriteAsync(ms.GetBuffer().AsMemory(0, (int)ms.Length), cancellationToken).ConfigureAwait(false);
+						ms.SetLength(0);
+					}
+				}
+			} //disposing StreamWriter flushes anything still buffered into ms — drained below
+
+			if (ms.Length > 0)
+				await stream.WriteAsync(ms.GetBuffer().AsMemory(0, (int)ms.Length), cancellationToken).ConfigureAwait(false);
 		}
 	}
 
