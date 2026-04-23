@@ -316,10 +316,12 @@ namespace Csv
 		/// </summary>
 		public byte[] ExportToBytes(Encoding encoding = null)
 		{
-			using var ms = ExportAsMemoryStream(encoding);
+			using var ms = new MemoryStream();
+			WriteToStream(ms, encoding);
 			return ms.ToArray();
 		}
 
+		[Obsolete("Use 'WriteToStream' instead")]
 		public MemoryStream ExportAsMemoryStream(Encoding encoding = null)
 		{
 			MemoryStream ms = new MemoryStream();
