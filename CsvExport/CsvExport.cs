@@ -130,11 +130,16 @@ namespace Csv
 					_fields.Add(field, num);
 				}
 
-				while (num >= _currentRow.Count) //fill the current row with nulls until we have the right size
-					_currentRow.Add(null);
-
-				_currentRow[num] = value; //set the raw value at position
+				SetCurrentRowValue(num, value);
 			}
+		}
+
+		private void SetCurrentRowValue(int num, object value)
+		{
+			while (num >= _currentRow.Count) //fill the current row with nulls until we have the right size
+				_currentRow.Add(null);
+
+			_currentRow[num] = value; //set the raw value at position
 		}
 
 		/// <summary>
@@ -155,12 +160,28 @@ namespace Csv
 			if (!e.MoveNext()) return; //empty - skip reflection cache warm-up
 
 			var accessors = ReflectionCache<T>.Accessors;
+
+			// Resolve property names to CSV column indexes once for this batch.
+			// The row loop below can then write by index instead of doing a dictionary lookup per cell.
+			var fieldIndexes = new int[accessors.Length];
+			for (int i = 0; i < accessors.Length; i++)
+			{
+				var field = accessors[i].Name;
+				if (!_fields.TryGetValue(field, out int num))
+				{
+					num = _fields.Count;
+					_fields.Add(field, num);
+				}
+
+				fieldIndexes[i] = num;
+			}
+
 			do
 			{
 				AddRow();
-				foreach (var a in accessors)
+				for (int i = 0; i < accessors.Length; i++)
 				{
-					this[a.Name] = a.Getter(e.Current);
+					SetCurrentRowValue(fieldIndexes[i], accessors[i].Getter(e.Current));
 				}
 			} while (e.MoveNext());
 		}

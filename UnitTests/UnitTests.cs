@@ -83,6 +83,22 @@ namespace UnitTests
 		}
 
 		[TestMethod]
+		public void TestGenericAfterExistingColumn()
+		{
+			List<MyClass> list = new() { new MyClass { Id = 123, Name = "Ffff" } };
+
+			var myExport = new CsvExport();
+			myExport.AddRow();
+			myExport["Prefix"] = "manual";
+
+			myExport.AddRows(list);
+
+			string csv = myExport.Export();
+
+			Assert.IsTrue(csv.Trim() == "sep=,\r\nPrefix,Id,Name\r\nmanual\r\n,123,Ffff", csv);
+		}
+
+		[TestMethod]
 		public void TestEmpty()
 		{
 			var myExport = new CsvExport();
