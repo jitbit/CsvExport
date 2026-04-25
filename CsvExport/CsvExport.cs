@@ -70,7 +70,12 @@ namespace Csv
 		/// </summary>
 		private readonly bool _includeHeaderRow;
 
-		private SearchValues<char> _searchValues;
+		// cache common search values for the two most common separators to avoid SearchValues.Create (expensive)
+		// slices half-microsecond from benchmarks
+		private static readonly SearchValues<char> _commaSearchValues = SearchValues.Create(",\n\r\"");
+		private static readonly SearchValues<char> _semicolonSearchValues = SearchValues.Create(";\n\r\"");
+
+		private readonly SearchValues<char> _searchValues;
 
 		/// <summary>
 		/// Default encoding
@@ -97,8 +102,16 @@ namespace Csv
 			_separatorChar = columnSeparator;
 			_includeColumnSeparatorDefinitionPreamble = includeColumnSeparatorDefinitionPreamble;
 			_includeHeaderRow = includeHeaderRow;
-			_searchValues = SearchValues.Create($"{columnSeparator}\n\r\"");
+			_searchValues = GetSearchValues(columnSeparator);
 		}
+
+		private static SearchValues<char> GetSearchValues(char columnSeparator) =>
+			columnSeparator switch
+			{
+				',' => _commaSearchValues,
+				';' => _semicolonSearchValues,
+				_ => SearchValues.Create($"{columnSeparator}\n\r\"")
+			};
 
 		/// <summary>
 		/// Set a value on this column
