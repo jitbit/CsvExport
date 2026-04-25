@@ -10,11 +10,13 @@ A very simple and very fast CSV-export tool for C#.
 
 ## Features
 
+1. 33 times faster than CsvHelper
+1. 3X less memory usage
+1. Streaming support (CSV writer does not buffer large CSVs in memory)
 1. Excel-compatible export (separator detected automatically, friendly-trimming rows and values for compatibility)
 2. Escapes commas, quotes, multiline text
 3. Exports dates in timezone-proof format
 4. Extremely easy to use
-5. 30 times faster than CsvHelper
 6. 4-times less memory usage
 
 ## Benchmarks
