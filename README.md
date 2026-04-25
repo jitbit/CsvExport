@@ -10,11 +10,13 @@ A very simple and very fast CSV-export tool for C#.
 
 ## Features
 
+1. 33 times faster than CsvHelper
+1. 3X less memory usage
+1. Streaming support (CSV writer does not buffer large CSVs in memory)
 1. Excel-compatible export (separator detected automatically, friendly-trimming rows and values for compatibility)
 2. Escapes commas, quotes, multiline text
 3. Exports dates in timezone-proof format
 4. Extremely easy to use
-5. 30 times faster than CsvHelper
 6. 4-times less memory usage
 
 ## Benchmarks
@@ -46,8 +48,8 @@ myExport["Region"] = "Canberra \"in\" Australia";
 myExport["Sales"] = 50000;
 myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
 
-///ASP.NET MVC action example
-return File(myExport.ExportAsMemoryStream(), "text/csv", "results.csv");
+//save as file
+myExport.ExportToFile("results.csv");
 ```
 
 For generating CSV out of a typed `List<T>` of objects:
@@ -75,13 +77,33 @@ Configuring is done via constructor parameters:
 
 ```c#
 var myExport = new CsvExport(
-	columnSeparator: ",",
+	columnSeparator: ',',
 	includeColumnSeparatorDefinitionPreamble: true, //Excel wants this in CSV files
 	includeHeaderRow: true
 );
 ```
 
-Also, methods `ExportToFile` and `ExportAsMemoryStream` and `ExportToBytes` offer an optional encoding parameter.
+Also, methods `ExportToFile` and `WriteToStream` and `ExportToBytes` offer an optional encoding parameter.
+
+### Using with ASP.NET Core:
+
+For big CSV files (megabytes) use `WriteToStreamAsync` and write to `Response.Body` directly. This is very important to save memory usage. Here's a handy heper class:
+
+```c#
+public class CsvExportResult(Csv.CsvExport csv, string fileName) : ActionResult
+{
+	public override Task ExecuteResultAsync(ActionContext ctx)
+	{
+		var res = ctx.HttpContext.Response;
+		res.ContentType = "text/csv";
+		res.Headers.ContentDisposition = $"attachment; filename=\"{fileName}\"";
+		return csv.WriteToStreamAsync(res.Body, cancellationToken: ctx.HttpContext.RequestAborted);
+	}
+}
+
+//usage in MVC action
+return new CsvExportResult(csvExport, "filename.csv");
+```
 
 ### License
 
