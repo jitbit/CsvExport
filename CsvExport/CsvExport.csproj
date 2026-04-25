@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
 	<PackageId>CsvExport</PackageId>
-	<Version>3.0.1</Version>
+	<Version>3.0.2</Version>
 	<Authors>Alex from Jitbit</Authors>
     <Copyright>Copyright Jitbit 2017-2025</Copyright>
     <PackageProjectUrl>https://github.com/jitbit/CsvExport</PackageProjectUrl>

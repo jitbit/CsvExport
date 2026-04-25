@@ -374,7 +374,7 @@ namespace Csv
 		{
 			// Use a MemoryStream as an intermediate buffer. Otherwise we either duplicate WriteCsvFriendlyValues as async
 			// or rewrite ICsvWriter as a class with async methods which will ruin JIT inlining optimizations
-			using var ms = new MemoryStream();
+			using var ms = new MemoryStream(2048);
 			using (var sw = new StreamWriter(ms, encoding ?? _defaultEncoding, 1024, leaveOpen: true)) //StreamWriter handles the BOM automatically on first write
 			{
 				var writer = new StreamWriterCsvWriter(sw);
