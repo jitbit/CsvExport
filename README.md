@@ -3,6 +3,8 @@ A very simple and very fast CSV-export tool for C#.
 
 [![.NET](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml/badge.svg)](https://github.com/jitbit/CsvExport/actions/workflows/dotnet.yml)
 
+Focused on speed and memory usage when streaming large exports in web-apps.
+
 ## V3 Breaking changes:
 
 - .NET 8 targeting (use v2 for .NET Framework, we'll backport critical fixes)
@@ -87,7 +89,7 @@ Also, methods `ExportToFile` and `WriteToStream` and `ExportToBytes` offer an op
 
 ### Using with ASP.NET Core:
 
-For big CSV files (megabytes) use `WriteToStreamAsync` and write to `Response.Body` directly. This is very important to save memory usage. Here's a handy heper class:
+For big CSV files (megabytes) use `WriteToStreamAsync` and write to `Response.Body` directly. This is very important to save memory usage. Here's a handy helper class:
 
 ```c#
 public class CsvExportResult(Csv.CsvExport csv, string fileName) : ActionResult
